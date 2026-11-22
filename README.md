@@ -1,4 +1,4 @@
-HowTo - Teknoloji Rehberi
+HowTo - Developer Rehberi
 ----------------------------
 - [Antigravity & Antigravity IDE Verimlilik Rehberi](/Howto/antigravity-rehber/)
 - [Codex Rehberi](/Howto/codex-rehber/)
