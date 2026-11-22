@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik veritabanında SELECT, JOIN ve GROUP BY ile katılımcı ve doluluk raporları yaz.">
+<title>T-SQL temelleri · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" aria-current="page" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+<main id="icerik" class="content">
+<div class="lesson">
+<nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>SQL Server ve T-SQL</span></nav>
+<h1>T-SQL temelleri</h1>
+<p class="lead">Etkinlik veritabanında SELECT ile listele, JOIN ile katılımcıları eşleştir ve GROUP BY ile doluluk raporu çıkar.</p>
+<div class="lesson-meta"><span>SQL Server</span><span>Ders 4</span><span>Yaklaşık 30 dakika</span></div>
+<div class="note"><strong>Ön koşul</strong><p><a href="/dersler/ef-core-sql-server/">Üçüncü dersteki ilk migration</a> uygulanmış olmalı. Beklenen sonuçlar iki başlangıç etkinliğini temel alır. Uygulamadan sonradan eklediğin etkinlikler, koşulları sağlıyorsa raporlara ek satır olarak gelir.</p></div>
+<a class="button secondary" href="/ornekler/etkinlik-raporlari-ders-04.sql" download>Rapor betiğini indir</a>
+<h2 id="hazirlik">Örnek veriyi hazırla</h2>
+
+<p>SQL sorgu aracında üçüncü derste oluşturduğun <code>DotNetAtolyeEtkinlikler</code> veritabanını seç. Aşağıdaki betik <code>dbo.Etkinlikler</code> tablosundaki iki başlangıç etkinliğini kullanır. <code>#AtolyeKatilimcilar</code> ve <code>#AtolyeKayitlar</code> bağlantıya özel geçici tablolardır. Betiği ve raporları aynı sorgu oturumunda çalıştır. Betiği yeniden çalıştırmak yalnızca bu iki geçici tabloyu baştan kurar.</p>
+<p>Her kayıt bir etkinlik kimliğiyle bir katılımcı kimliğini eşleştirir. Bileşik birincil anahtar aynı katılımcının aynı etkinlikte iki kez sayılmasını önler. Örnekte üç katılımcı Web Geliştirme Atölyesi’ne kayıtlı. SQL Server Semineri’nin kaydı yok.</p>
+<div class="code"><div class="code-head"><span>T-SQL · Geçici örnek tablolar</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>IF OBJECT_ID(N&#x27;dbo.Etkinlikler&#x27;, N&#x27;U&#x27;) IS NULL
+    THROW 50001, N&#x27;Ders 3 migration adımını tamamlayın ve doğru veritabanını seçin.&#x27;, 1;
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Etkinlikler WHERE Id = 1)
+    OR NOT EXISTS (SELECT 1 FROM dbo.Etkinlikler WHERE Id = 2)
+    THROW 50002, N&#x27;Rapor örnekleri Ders 3 başlangıç etkinliklerini gerektirir.&#x27;, 1;
+
+DROP TABLE IF EXISTS #AtolyeKayitlar;
+DROP TABLE IF EXISTS #AtolyeKatilimcilar;
+
+CREATE TABLE #AtolyeKatilimcilar (
+    Id int NOT NULL PRIMARY KEY,
+    Ad nvarchar(80) NOT NULL
+);
+
+CREATE TABLE #AtolyeKayitlar (
+    EtkinlikId int NOT NULL,
+    KatilimciId int NOT NULL,
+    PRIMARY KEY (EtkinlikId, KatilimciId)
+);
+
+INSERT INTO #AtolyeKatilimcilar (Id, Ad)
+VALUES (1, N&#x27;Deniz Kaya&#x27;), (2, N&#x27;Ece Arslan&#x27;), (3, N&#x27;Mert Yılmaz&#x27;);
+
+INSERT INTO #AtolyeKayitlar (EtkinlikId, KatilimciId)
+VALUES (1, 1), (1, 2), (1, 3);</code></pre></div>
+<h2 id="select">SELECT ile etkinlikleri filtrele</h2>
+
+<p><code>SELECT</code> sonuçta gösterilecek sütunları, <code>FROM</code> kaynak tabloyu, <code>WHERE</code> satır koşulunu belirler. <code>ORDER BY</code> kontenjanı büyükten küçüğe sıralar. Kontenjanlar eşitse etkinlik kimliği sıralamayı belirler.</p>
+<div class="code"><div class="code-head"><span>Rapor · 30 ve üzeri kontenjan</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>-- SELECT: 30 ve üzeri kontenjanı olan etkinlikler
+SELECT e.Id, e.Ad, e.Kontenjan
+FROM dbo.Etkinlikler AS e
+WHERE e.Kontenjan &gt;= 30
+ORDER BY e.Kontenjan DESC, e.Id;</code></pre></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Kontenjan filtresi sonucu"><table><thead><tr><th scope="col">Id</th><th scope="col">Etkinlik</th><th scope="col">Kontenjan</th></tr></thead><tbody><tr><td>2</td><td>SQL Server Semineri</td><td>40</td></tr></tbody></table></div>
+<h2 id="join">INNER JOIN ile katılımcıları listele</h2>
+
+<p>Her kayıttaki <code>EtkinlikId</code> etkinliğe, <code>KatilimciId</code> katılımcıya bağlanır. <code>ON</code> koşulları hangi satırların eşleşeceğini belirler. <code>INNER JOIN</code> iki tarafta da eşleşme aradığı için kaydı olmayan seminer bu listede görünmez.</p>
+<div class="code"><div class="code-head"><span>Rapor · Katılımcı listesi</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>-- INNER JOIN: Etkinliğe kayıtlı katılımcılar
+SELECT e.Ad AS Etkinlik, k.Ad AS Katilimci
+FROM #AtolyeKayitlar AS r
+INNER JOIN dbo.Etkinlikler AS e ON e.Id = r.EtkinlikId
+INNER JOIN #AtolyeKatilimcilar AS k ON k.Id = r.KatilimciId
+ORDER BY e.Id, k.Id;</code></pre></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Katılımcı listesi sonucu"><table><thead><tr><th scope="col">Etkinlik</th><th scope="col">Katılımcı</th></tr></thead><tbody><tr><td>Web Geliştirme Atölyesi</td><td>Deniz Kaya</td></tr><tr><td>Web Geliştirme Atölyesi</td><td>Ece Arslan</td></tr><tr><td>Web Geliştirme Atölyesi</td><td>Mert Yılmaz</td></tr></tbody></table></div>
+<h2 id="group-by">LEFT JOIN ve GROUP BY ile doluluk raporu</h2>
+
+<p><code>LEFT JOIN</code> kaydı olmayan etkinlikleri de korur. <code>GROUP BY</code> her etkinliği tek satıra toplar. Kimliği de gruba eklediğimiz için aynı ada ve kontenjana sahip iki etkinlik ayrı sayılır.</p>
+<p><code>COUNT(r.KatilimciId)</code> yalnızca dolu kimlikleri sayar. Burada <code>COUNT(*)</code> kullanmak kaydı olmayan etkinliği de bir kayıt varmış gibi sayar. <code>100.0</code> ondalıklı bölme sağlar. Kontenjan kısıtı paydanın sıfır olmasını önler.</p>
+<div class="code"><div class="code-head"><span>Rapor · Etkinlik doluluğu ve kalan yer</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>-- LEFT JOIN ve GROUP BY: Etkinlik başına doluluk
+SELECT
+    e.Ad AS Etkinlik,
+    e.Kontenjan,
+    COUNT(r.KatilimciId) AS KayitSayisi,
+    e.Kontenjan - COUNT(r.KatilimciId) AS KalanYer,
+    CAST(100.0 * COUNT(r.KatilimciId) / e.Kontenjan AS decimal(5, 2)) AS DolulukYuzdesi
+FROM dbo.Etkinlikler AS e
+LEFT JOIN #AtolyeKayitlar AS r ON e.Id = r.EtkinlikId
+GROUP BY e.Id, e.Ad, e.Kontenjan
+ORDER BY e.Id;</code></pre></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Doluluk raporu sonucu"><table><thead><tr><th scope="col">Etkinlik</th><th scope="col">Kontenjan</th><th scope="col">Kayıt</th><th scope="col">Kalan yer</th><th scope="col">Doluluk</th></tr></thead><tbody><tr><td>Web Geliştirme Atölyesi</td><td>25</td><td>3</td><td>22</td><td>%12,00</td></tr><tr><td>SQL Server Semineri</td><td>40</td><td>0</td><td>40</td><td>%0,00</td></tr></tbody></table></div>
+<h2 id="having">HAVING ile grupları filtrele</h2>
+
+<p><code>WHERE</code> gruplamadan önce satırları filtreler. <code>HAVING</code> ise gruplama tamamlandıktan sonra özet değerlere koşul uygular. Bu örneğin sonucu üç kaydı olan Web Geliştirme Atölyesi’dir.</p>
+<div class="code"><div class="code-head"><span>Rapor · En az iki kaydı olan etkinlikler</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>-- HAVING: En az iki kaydı olan etkinlikler
+SELECT e.Ad AS Etkinlik, COUNT(r.KatilimciId) AS KayitSayisi
+FROM dbo.Etkinlikler AS e
+LEFT JOIN #AtolyeKayitlar AS r ON e.Id = r.EtkinlikId
+GROUP BY e.Id, e.Ad
+HAVING COUNT(r.KatilimciId) &gt;= 2
+ORDER BY KayitSayisi DESC, e.Id;</code></pre></div>
+<h2 id="alistirma">Alıştırma</h2>
+
+<p>Doluluk raporunu yalnızca kaydı olmayan etkinlikleri gösterecek şekilde değiştir. Ardından <code>#AtolyeKayitlar</code> tablosuna <code>(2, 1)</code> kaydını ekleyip doluluk raporunu yeniden çalıştır. Seminer için bir kayıt, 39 kalan yer ve %2,50 doluluk görmelisin.</p>
+<p><a href="https://learn.microsoft.com/en-us/sql/t-sql/queries/from-transact-sql?view=sql-server-ver17">Microsoft Learn · FROM ve JOIN</a> · <a href="https://learn.microsoft.com/en-us/sql/t-sql/queries/select-group-by-transact-sql?view=sql-server-ver17">Microsoft Learn · GROUP BY</a></p>
+<a class="button secondary" href="/dersler/ef-core-sql-server/">Önceki ders · EF Core ve SQL Server</a>
+<a class="button primary" href="/dersler/ef-core-linq-raporlama/">Sonraki ders · EF Core ile doluluk</a>
+</div></main>
+<aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#hazirlik">Örnek veriyi hazırla</a><a href="#select">SELECT ile etkinlikleri filtrele</a><a href="#join">INNER JOIN ile katılımcıları listele</a><a href="#group-by">LEFT JOIN ve GROUP BY ile doluluk raporu</a><a href="#having">HAVING ile grupları filtrele</a><a href="#alistirma">Alıştırma</a></nav></aside>
+</div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

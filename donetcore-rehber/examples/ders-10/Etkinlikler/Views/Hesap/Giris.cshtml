@@ -1,0 +1,17 @@
+@model GirisFormu
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Giriş yap</title></head>
+<body>
+<main>
+    <h1>Giriş yap</h1>
+    <form asp-action="Giris" method="post">
+        <div asp-validation-summary="ModelOnly" role="alert"></div>
+        <input asp-for="ReturnUrl" type="hidden" />
+        <p><label asp-for="Eposta">E-posta</label> <input asp-for="Eposta" autocomplete="username" /><span asp-validation-for="Eposta"></span></p>
+        <p><label asp-for="Parola">Parola</label> <input asp-for="Parola" autocomplete="current-password" /><span asp-validation-for="Parola"></span></p>
+        <p><button type="submit">Giriş yap</button></p>
+    </form>
+</main>
+</body>
+</html>

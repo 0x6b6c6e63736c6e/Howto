@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ASP.NET Core Web API ile etkinlikleri listele ve güvenli biçimde ekle.">
+<title>ASP.NET Core Web API · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/" aria-current="page"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>ASP.NET Core</span></nav><h1>ASP.NET Core Web API</h1><p class="lead">Etkinlikleri JSON olarak listele ve yönetici oturumuyla API üzerinden yeni etkinlik ekle.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 9</span><span>Yaklaşık 35 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/identity-ve-yetkilendirme/">Yedinci dersteki yönetici hesabı</a> ve SQL Server bağlantısı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-09.zip" download>Örnek projeyi indir</a><h2 id="api">API adresleri ve yanıtlar</h2><p>API aynı <code>EtkinlikDbContext</code> ve SQL Server veritabanını kullanır. <code>GET /api/etkinlikler</code> listeyi JSON olarak, <code>GET /api/etkinlikler/1</code> tek bir etkinliği döndürür. Bulunmayan kimlik 404 verir. <code>POST /api/etkinlikler</code> yönetici yetkisiyle etkinlik ekler ve 201 ile yeni kaydın adresini içeren <code>Location</code> başlığını döndürür.</p><p><code>[ApiController]</code> JSON modelini doğrular. Ad 3–80 karakter, kontenjan 1–500 olmalıdır. Geçersiz istek 400 ve alan hata ayrıntıları döndürür. Oturum açılmamış yönetici isteği 401, rolü olmayan kullanıcı 403 alır.</p><h2 id="controller">API controller ve yönlendirme</h2><p><code>ControllerBase</code> JSON API yanıtları için kullanılır. <code>AsNoTracking</code> salt okunur liste ve detay sorgularını izleme yükü olmadan çalıştırır. POST için mevcut form modelindeki doğrulama kuralları kullanılır. Yeni kayıt <code>SaveChangesAsync</code> ile yazılır.</p><div class="code"><div class="code-head"><span>Controllers/Api/EtkinliklerApiController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Controllers.Api;
+
+[ApiController]
+[Route(&quot;api/etkinlikler&quot;)]
+public class EtkinliklerApiController(EtkinlikDbContext db) : ControllerBase
+{
+    [HttpGet]
+    public async Task&lt;ActionResult&lt;IReadOnlyList&lt;Etkinlik&gt;&gt;&gt; Listele(CancellationToken cancellationToken)
+    {
+        var etkinlikler = await db.Etkinlikler.AsNoTracking()
+            .OrderBy(e =&gt; e.Id).ToListAsync(cancellationToken);
+        return Ok(etkinlikler);
+    }
+
+    [HttpGet(&quot;{id:int}&quot;)]
+    public async Task&lt;ActionResult&lt;Etkinlik&gt;&gt; Getir(int id, CancellationToken cancellationToken)
+    {
+        var etkinlik = await db.Etkinlikler.AsNoTracking()
+            .SingleOrDefaultAsync(e =&gt; e.Id == id, cancellationToken);
+        return etkinlik is null ? NotFound() : Ok(etkinlik);
+    }
+
+    [Authorize(Roles = &quot;Yonetici&quot;)]
+    [HttpGet(&quot;form-belirteci&quot;)]
+    public IActionResult FormBelirteci([FromServices] IAntiforgery antiforgery)
+    {
+        var token = antiforgery.GetAndStoreTokens(HttpContext);
+        return Ok(new { token = token.RequestToken });
+    }
+
+    [Authorize(Roles = &quot;Yonetici&quot;)]
+    [ValidateAntiForgeryToken]
+    [HttpPost]
+    public async Task&lt;ActionResult&lt;Etkinlik&gt;&gt; Ekle(
+        [FromBody] EtkinlikFormu form, CancellationToken cancellationToken)
+    {
+        var etkinlik = new Etkinlik { Ad = form.Ad!, Kontenjan = form.Kontenjan!.Value };
+        db.Etkinlikler.Add(etkinlik);
+        await db.SaveChangesAsync(cancellationToken);
+        return CreatedAtAction(nameof(Getir), new { id = etkinlik.Id }, etkinlik);
+    }
+}</code></pre></div><p><code>Program.cs</code> içinde MVC servisleri zaten kayıtlıdır. Özellik tabanlı API adreslerini eşle ve çerezle gönderilen POST için belirteç başlığını tanımla.</p><div class="code"><div class="code-head"><span>Program.cs · ilgili satırlar</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>builder.Services.AddControllersWithViews();
+builder.Services.AddAntiforgery(options =&gt; options.HeaderName = &quot;X-CSRF-TOKEN&quot;);
+
+// app.UseAuthentication() ve app.UseAuthorization() sonrasında
+app.MapControllers();</code></pre></div><h2 id="dene">API isteğini dene</h2><p>ZIP dosyasını aç ve önce yedinci dersteki SQL Server bağlantısını, migration’ları ve yönetici hesabını hazırla. Yeni migration gerekmez. Uygulamayı başlat.</p><div class="code"><div class="code-head"><span>Terminal · ZIP içindeki ders klasöründen</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --project Etkinlikler --no-launch-profile --urls http://localhost:5086</code></pre></div><p>Listeyi terminalden iste.</p><div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>curl http://localhost:5086/api/etkinlikler</code></pre></div><p>Yeni kayıt için aynı adreste tarayıcıdan yönetici olarak giriş yap. Giriş sonrasında tarayıcının geliştirici konsolunda aşağıdaki örneği çalıştır. İlk istek oturuma bağlı doğrulama belirtecini ve çerezini alır. İkinci istek bunlarla JSON gönderir. Bu örnek tarayıcıdaki mevcut Identity oturumunu kullanır.</p><div class="code"><div class="code-head"><span>Tarayıcı konsolu</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>const tokenYaniti = await fetch(&quot;/api/etkinlikler/form-belirteci&quot;);
+const { token } = await tokenYaniti.json();
+
+const yanit = await fetch(&quot;/api/etkinlikler&quot;, {
+    method: &quot;POST&quot;,
+    headers: {
+        &quot;Content-Type&quot;: &quot;application/json&quot;,
+        &quot;X-CSRF-TOKEN&quot;: token
+    },
+    body: JSON.stringify({ ad: &quot;API Atölyesi&quot;, kontenjan: 30 })
+});
+console.log(yanit.status, yanit.headers.get(&quot;Location&quot;), await yanit.json());</code></pre></div><p>Başarılı yanıtta 201 ve oluşturulan etkinliğin JSON verisi görünür. Aynı etkinliği liste isteğinde de görebilirsin. Bağımsız istemciler için kimlik doğrulama ayrıca tasarlanmalıdır.</p><h2 id="test">Test ve alıştırma</h2><p>Test projesi geçici SQLite veritabanında listeleme, 401, 403, eksik belirteç, geçersiz veri ve başarılı 201 yanıtını kontrol eder. Testte kimlik test düzeniyle oluşturulur. SQL Server bağlantısı ve gerçek Identity oturumu ayrı entegrasyon testleriyle doğrulanmalıdır.</p><div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj</code></pre></div><p>Alıştırma olarak detay adresine bulunmayan bir kimlik gönder ve 404 yanıtını incele. Ardından geçersiz kontenjan gönderip 400 yanıtındaki hata mesajını bul.</p><p><a href="https://learn.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-10.0">Microsoft Learn · ASP.NET Core Web API</a></p><a class="button secondary" href="/dersler/test-ve-yayin/">Önceki ders · Test ve yayın hazırlığı</a> <a class="button primary" href="/dersler/web-api-guncelle-sil/">Sonraki ders · API güncelleme ve silme</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#api">API adresleri ve yanıtlar</a><a href="#controller">API controller ve yönlendirme</a><a href="#dene">API isteğini dene</a><a href="#test">Test ve alıştırma</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

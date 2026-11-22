@@ -1,0 +1,31 @@
+@model IReadOnlyList<Etkinlik>
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Etkinlikler</title>
+</head>
+<body>
+    <h1>Etkinlikler</h1>
+    @if (User.IsInRole("Yonetici"))
+    {
+    <p><a asp-controller="Kayitlar" asp-action="Ekle">Katılımcı kaydet</a></p>
+    <p><a asp-action="Ekle">Etkinlik ekle</a> · <a asp-action="Doluluk">Doluluk raporu</a></p>
+    }
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <form asp-controller="Hesap" asp-action="Cikis" method="post"><button type="submit">Çıkış yap</button></form>
+    }
+    else
+    {
+        <p><a asp-controller="Hesap" asp-action="Giris">Giriş yap</a></p>
+    }
+    <ul>
+        @foreach (var etkinlik in Model)
+        {
+            <li>@etkinlik.Ad (@etkinlik.Kontenjan kişilik)</li>
+        }
+    </ul>
+</body>
+</html>

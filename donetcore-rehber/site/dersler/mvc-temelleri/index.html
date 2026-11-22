@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik projesine ASP.NET Core MVC formu, model binding ve sunucu doğrulaması ekle.">
+<title>MVC temelleri ve form doğrulama · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/" aria-current="page"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+<main id="icerik" class="content">
+<div class="lesson">
+<nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>ASP.NET Core</span></nav>
+<h1>MVC temelleri ve form doğrulama</h1>
+<p class="lead">Etkinlik listesine bir ekleme formu bağla. Form verisinin Razor’dan controller’a nasıl ulaştığını izle ve geçersiz girişleri kullanıcıya göster.</p>
+<div class="lesson-meta"><span>.NET 10</span><span>Ders 2</span><span>Yaklaşık 30 dakika</span></div>
+<div class="note"><strong>Ön koşul</strong><p>.NET 10 SDK ve <a href="/dersler/mvc5ten-corea/">ilk dersteki etkinlik listesi</a>. Örneği indirerek tamamlanmış projeyi çalıştırabilir veya ilk dersteki dosyaları adım adım güncelleyebilirsin.</p></div>
+<a class="button secondary" href="/ornekler/etkinlikler-ders-02.zip" download>Örnek projeyi indir</a>
+<h2 id="istek">MVC’de istek nasıl ilerler?</h2>
+
+<p><code>GET /Etkinlikler/Ekle</code> isteği boş formu açar. Kaydet düğmesi aynı adrese <code>POST</code> gönderir. Routing, adres ve HTTP yöntemine göre doğru action’ı seçer. Model binding form alanlarını <code>EtkinlikFormu</code> özelliklerine dönüştürür ve MVC doğrulama kurallarını çalıştırır.</p>
+<p>Controller geçersiz gönderimde aynı view’ı döndürür. Kullanıcının girdiği değerler ve hata mesajları <code>ModelState</code> üzerinden ekrana gelir. Başarılı gönderim ise listeyi açan yeni bir GET isteğine yönlendirilir. Bu akışa <strong>Post/Redirect/Get</strong> denir ve listeyi yenilemek formu tekrar göndermez.</p>
+<h2 id="model">Form modelini tanımla</h2>
+
+<p>Projede <code>Models/EtkinlikFormu.cs</code> dosyasını oluştur. Form modelinde yalnızca kullanıcıdan kabul ettiğin alanları tanımla. <code>int?</code> sayesinde boş kontenjan ile girilmiş <code>0</code> ayrı doğrulama mesajları üretebilir. Sayıya çevrilemeyen değer ise model binding hatasıdır.</p>
+<div class="code"><div class="code-head"><span>Models/EtkinlikFormu.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.ComponentModel.DataAnnotations;
+
+namespace Etkinlikler.Models;
+
+public sealed class EtkinlikFormu
+{
+    [Display(Name = &quot;Etkinlik adı&quot;)]
+    [Required(ErrorMessage = &quot;Etkinlik adını girin.&quot;)]
+    [StringLength(80, MinimumLength = 3,
+        ErrorMessage = &quot;Etkinlik adı 3 ile 80 karakter arasında olmalı.&quot;)]
+    public string? Ad { get; set; }
+
+    [Required(ErrorMessage = &quot;Kontenjanı girin.&quot;)]
+    [Range(1, 500, ErrorMessage = &quot;Kontenjan 1 ile 500 arasında olmalı.&quot;)]
+    public int? Kontenjan { get; set; }
+}</code></pre></div>
+<h2 id="liste">Etkinlik listesini servise taşı</h2>
+
+<p>İlk dersteki diziyi bir liste servisine taşı. <code>Etkinlik</code> kaydı, liste ekranının göstereceği adı ve kontenjanı taşır. Servis bir kopya döndürür ve eşzamanlı okuma ile eklemeleri kilit altında yürütür.</p>
+<div class="code"><div class="code-head"><span>Models/EtkinlikListesi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>namespace Etkinlikler.Models;
+
+public sealed record Etkinlik(string Ad, int Kontenjan);
+
+public sealed class EtkinlikListesi
+{
+    private readonly object kilit = new();
+    private readonly List&lt;Etkinlik&gt; etkinlikler =
+    [
+        new(&quot;Web Geliştirme Atölyesi&quot;, 25),
+        new(&quot;SQL Server Semineri&quot;, 40)
+    ];
+
+    public IReadOnlyList&lt;Etkinlik&gt; Listele()
+    {
+        lock (kilit)
+        {
+            return etkinlikler.ToArray();
+        }
+    }
+
+    public void Ekle(Etkinlik etkinlik)
+    {
+        lock (kilit)
+        {
+            etkinlikler.Add(etkinlik);
+        }
+    }
+}</code></pre></div>
+<p><code>AddSingleton</code> sayesinde GET ve POST istekleri aynı listeyi kullanır. Eklenen kayıtlar uygulama yeniden başladığında silinir. EF Core bölümünde kalıcı veritabanı bağlantısı ekleyeceğiz.</p>
+<div class="code"><div class="code-head"><span>Program.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton&lt;EtkinlikListesi&gt;();
+
+var app = builder.Build();
+
+app.MapControllerRoute(
+    name: &quot;default&quot;,
+    pattern: &quot;{controller=Etkinlikler}/{action=Index}/{id?}&quot;);
+
+app.Run();</code></pre></div>
+<h2 id="controller">GET ve POST action’larını yaz</h2>
+
+<p><code>[HttpGet]</code> boş formu açar. <code>[HttpPost]</code> gönderimi alır. <code>[ValidateAntiForgeryToken]</code>, Form Tag Helper’ın ürettiği doğrulama belirtecini kontrol eder. <code>ModelState.IsValid</code> başarılıysa zorunlu alanlar ve kontenjan aralığı doğrulanmış olur.</p>
+<div class="code"><div class="code-head"><span>Controllers/EtkinliklerController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Etkinlikler.Controllers;
+
+public class EtkinliklerController(EtkinlikListesi liste) : Controller
+{
+    [HttpGet]
+    public IActionResult Index() =&gt; View(liste.Listele());
+
+    [HttpGet]
+    public IActionResult Ekle() =&gt; View(new EtkinlikFormu());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Ekle(EtkinlikFormu form)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(form);
+        }
+
+        liste.Ekle(new Etkinlik(form.Ad!, form.Kontenjan!.Value));
+        return RedirectToAction(nameof(Index));
+    }
+}</code></pre></div>
+<h2 id="view">Razor ve Tag Helpers ile formu bağla</h2>
+
+<p><code>Views/_ViewImports.cshtml</code> dosyası Razor sayfalarına model ad alanını ve MVC Tag Helpers desteğini ekler.</p>
+<div class="code"><div class="code-head"><span>Views/_ViewImports.cshtml</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>@using Etkinlikler.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers</code></pre></div>
+<p><code>asp-action</code> form adresini, <code>asp-for</code> alan adı ve etiketini, <code>asp-validation-for</code> alanın hata mesajını üretir. Örnekte doğrulama mesajlarını Kaydet’e bastıktan sonra sunucu döndürür.</p>
+<div class="code"><div class="code-head"><span>Views/Etkinlikler/Ekle.cshtml</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>@model EtkinlikFormu
+&lt;!doctype html&gt;
+&lt;html lang=&quot;tr&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;
+    &lt;title&gt;Etkinlik ekle&lt;/title&gt;
+    &lt;style&gt;
+        body { font: 1rem/1.5 system-ui, sans-serif; max-width: 34rem; margin: 2rem auto; padding: 0 1rem; }
+        label, input, .field-validation-error { display: block; }
+        input { box-sizing: border-box; width: 100%; padding: .5rem; font: inherit; }
+        .field-validation-error { color: #a42028; }
+        button { font: inherit; padding: .45rem .8rem; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;main&gt;
+        &lt;h1&gt;Etkinlik ekle&lt;/h1&gt;
+        &lt;form asp-action=&quot;Ekle&quot; method=&quot;post&quot;&gt;
+            &lt;p&gt;
+                &lt;label asp-for=&quot;Ad&quot;&gt;&lt;/label&gt;
+                &lt;input asp-for=&quot;Ad&quot; aria-describedby=&quot;ad-hata&quot; /&gt;
+                &lt;span id=&quot;ad-hata&quot; asp-validation-for=&quot;Ad&quot;&gt;&lt;/span&gt;
+            &lt;/p&gt;
+            &lt;p&gt;
+                &lt;label asp-for=&quot;Kontenjan&quot;&gt;&lt;/label&gt;
+                &lt;input asp-for=&quot;Kontenjan&quot; aria-describedby=&quot;kontenjan-hata&quot; /&gt;
+                &lt;span id=&quot;kontenjan-hata&quot; asp-validation-for=&quot;Kontenjan&quot;&gt;&lt;/span&gt;
+            &lt;/p&gt;
+            &lt;p&gt;&lt;button type=&quot;submit&quot;&gt;Kaydet&lt;/button&gt;&lt;/p&gt;
+        &lt;/form&gt;
+        &lt;p&gt;&lt;a asp-action=&quot;Index&quot;&gt;Listeye dön&lt;/a&gt;&lt;/p&gt;
+    &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+<p>Liste view’ı artık <code>IReadOnlyList&lt;Etkinlik&gt;</code> alır. Oluşturma bağlantısı da Tag Helper ile üretilir.</p>
+<div class="code"><div class="code-head"><span>Views/Etkinlikler/Index.cshtml</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>@model IReadOnlyList&lt;Etkinlik&gt;
+&lt;!doctype html&gt;
+&lt;html lang=&quot;tr&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;
+    &lt;title&gt;Etkinlikler&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Etkinlikler&lt;/h1&gt;
+    &lt;p&gt;&lt;a asp-action=&quot;Ekle&quot;&gt;Etkinlik ekle&lt;/a&gt;&lt;/p&gt;
+    &lt;ul&gt;
+        @foreach (var etkinlik in Model)
+        {
+            &lt;li&gt;@etkinlik.Ad (@etkinlik.Kontenjan kişilik)&lt;/li&gt;
+        }
+    &lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+<h2 id="dene">Çalıştır ve doğrula</h2>
+
+<p>Örnek ZIP’i aç, terminalde <code>Etkinlikler</code> klasörüne gir ve uygulamayı çalıştır. Tarayıcıda <code>http://localhost:5081/</code> adresinden <strong>Etkinlik ekle</strong> bağlantısını aç.</p>
+<div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet run --no-launch-profile --urls http://localhost:5081</code></pre></div>
+<div class="table-wrap" tabindex="0"><table><thead><tr><th>Gönderim</th><th>Beklenen sonuç</th></tr></thead><tbody>
+<tr><td>İki alan da boş</td><td>İki zorunlu alan mesajı görünür.</td></tr>
+<tr><td>Ad <code>AB</code>, kontenjan <code>501</code></td><td>Uzunluk ve aralık mesajları görünür. Girilen değerler formda kalır.</td></tr>
+<tr><td>Ad <code>Razor Atölyesi</code>, kontenjan <code>25</code></td><td>Liste açılır ve yeni etkinlik 25 kişilik görünür. Listeyi yenilemek ikinci kayıt oluşturmaz.</td></tr>
+</tbody></table></div>
+<h2 id="alistirma">Alıştırma</h2>
+
+<p>Forma isteğe bağlı bir açıklama ekle ve en fazla 150 karakter kabul et. Açıklamayı başarılı kayıttan sonra liste ekranında göster. Boş, tam 150 karakter ve 151 karakter ile test et.</p>
+<p><a href="https://learn.microsoft.com/tr-tr/aspnet/core/mvc/models/validation?view=aspnetcore-10.0">Microsoft Learn · ASP.NET Core model doğrulama</a></p>
+<a class="button secondary" href="/dersler/mvc5ten-corea/">Önceki ders · MVC 5’ten geçiş</a>
+<a class="button primary" href="/dersler/ef-core-sql-server/">Sonraki ders · EF Core ve SQL Server</a>
+</div></main>
+<aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#istek">MVC’de istek nasıl ilerler?</a><a href="#model">Form modelini tanımla</a><a href="#liste">Etkinlik listesini servise taşı</a><a href="#controller">GET ve POST action’larını yaz</a><a href="#view">Razor ve Tag Helpers ile formu bağla</a><a href="#dene">Çalıştır ve doğrula</a><a href="#alistirma">Alıştırma</a></nav></aside>
+</div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

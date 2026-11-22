@@ -1,0 +1,44 @@
+@model IReadOnlyList<EtkinlikDolulugu>
+@using System.Globalization
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Etkinlik doluluk raporu</title>
+</head>
+<body>
+    <main>
+        <h1>Etkinlik doluluk raporu</h1>
+        @if (TempData["KayitMesaji"] is string mesaj)
+        {
+            <p role="status">@mesaj</p>
+        }
+        <p><a asp-controller="Kayitlar" asp-action="Ekle">Katılımcı kaydet</a></p>
+        <p><a asp-action="Index">Etkinliklere dön</a></p>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Etkinlik</th>
+                    <th scope="col">Kontenjan</th>
+                    <th scope="col">Kayıt</th>
+                    <th scope="col">Kalan yer</th>
+                    <th scope="col">Doluluk (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var satir in Model)
+                {
+                    <tr>
+                        <th scope="row">@satir.Etkinlik</th>
+                        <td>@satir.Kontenjan</td>
+                        <td>@satir.KayitSayisi</td>
+                        <td>@satir.KalanYer</td>
+                        <td>@satir.DolulukYuzdesi.ToString("0.00", CultureInfo.GetCultureInfo("tr-TR"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

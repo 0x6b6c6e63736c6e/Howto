@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik projesini EF Core ile SQL Server’a bağla, DbContext ve migration adımlarını öğren.">
+<title>EF Core ve SQL Server · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" aria-current="page" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+<main id="icerik" class="content">
+<div class="lesson">
+<nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>EF Core</span></nav>
+<h1>EF Core ile SQL Server’a bağlan</h1>
+<p class="lead">Etkinlik listesini bellekte tutan servisi SQL Server’a taşı. DbContext’i tanımla, ilk migration’ı uygula ve formdan eklenen kayıtları kalıcı olarak sakla.</p>
+<div class="lesson-meta"><span>.NET 10 ve EF Core 10</span><span>Ders 3</span><span>Yaklaşık 40 dakika</span></div>
+<div class="note"><strong>Ön koşul</strong><p>.NET 10 SDK, erişebildiğin bir SQL Server ve <a href="/dersler/mvc-temelleri/">ikinci dersteki etkinlik formu</a>. Apple Silicon kullanıyorsan desteklenen bir bilgisayarda veya uzak sunucuda çalışan SQL Server’a bağlanabilirsin.</p></div>
+<a class="button secondary" href="/ornekler/etkinlikler-ders-03.zip" download>Örnek projeyi indir</a>
+<h2 id="paketler">Projeyi ve paketleri hazırla</h2>
+
+<p>Örnek ZIP’i açıp <code>Etkinlikler</code> dizinine gir. Proje, SQL Server sağlayıcısını ve migration üretmek için <code>Design</code> paketini içeriyor. Aynı sürümdeki <code>dotnet-ef</code> aracı proje manifestinde tanımlı.</p>
+<div class="code"><div class="code-head"><span>Terminal · İndirilen örneği hazırla</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet restore
+dotnet tool restore</code></pre></div>
+<p>İkinci dersteki projeyi kendin güncelliyorsan önce projenin bir kopyasını al. Yeni kopyada bellek içi <code>EtkinlikListesi</code> servisini, kaydını ve eski <code>Etkinlik</code> tanımını kaldır. Paket referanslarını ve <code>UserSecretsId</code> ayarını aşağıdaki dosyadan, araç manifestini de örnekten al. İki Razor view ile <code>EtkinlikFormu</code> aynı şekilde kullanılır.</p>
+<div class="code"><div class="code-head"><span>Etkinlikler.csproj</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>&lt;Project Sdk=&quot;Microsoft.NET.Sdk.Web&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;UserSecretsId&gt;DotNetAtolye-Etkinlikler-Ders03&lt;/UserSecretsId&gt;
+  &lt;/PropertyGroup&gt;
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include=&quot;Microsoft.EntityFrameworkCore.SqlServer&quot; Version=&quot;10.0.12&quot; /&gt;
+    &lt;PackageReference Include=&quot;Microsoft.EntityFrameworkCore.Design&quot; Version=&quot;10.0.12&quot;&gt;
+      &lt;PrivateAssets&gt;all&lt;/PrivateAssets&gt;
+    &lt;/PackageReference&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;</code></pre></div>
+<h2 id="context">Etkinlik modelini ve DbContext’i yaz</h2>
+
+<p><code>EtkinlikFormu</code> kullanıcı girdisini doğrular. <code>Etkinlik</code> veritabanındaki satırı temsil eder. EF Core, <code>Id</code> özelliğini birincil anahtar olarak tanır. SQL Server sağlayıcısı bu tamsayı anahtarı için otomatik değer üretir.</p>
+<div class="code"><div class="code-head"><span>Models/Etkinlik.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>namespace Etkinlikler.Models;
+
+public sealed class Etkinlik
+{
+    public int Id { get; set; }
+    public string Ad { get; set; } = string.Empty;
+    public int Kontenjan { get; set; }
+}</code></pre></div>
+<p><code>DbContext</code> sorguları çalıştırır ve kayda gönderilecek değişiklikleri izler. <code>DbSet&lt;Etkinlik&gt;</code> etkinlikleri sorgulama ve yeni kayıt ekleme giriş noktasıdır. Aşağıdaki yapılandırma, ad sütununu en fazla 80 karakterle sınırlar ve kontenjan aralığını veritabanında da zorunlu kılar. İlk migration önceki dersten tanıdığımız iki örnek satırı ekler.</p>
+<div class="code"><div class="code-head"><span>Data/EtkinlikDbContext.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public sealed class EtkinlikDbContext(DbContextOptions&lt;EtkinlikDbContext&gt; options)
+    : DbContext(options)
+{
+    public DbSet&lt;Etkinlik&gt; Etkinlikler =&gt; Set&lt;Etkinlik&gt;();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        var etkinlik = modelBuilder.Entity&lt;Etkinlik&gt;();
+
+        etkinlik.ToTable(&quot;Etkinlikler&quot;, table =&gt;
+            table.HasCheckConstraint(&quot;CK_Etkinlikler_Kontenjan&quot;, &quot;[Kontenjan] BETWEEN 1 AND 500&quot;));
+
+        etkinlik.Property(item =&gt; item.Ad).HasMaxLength(80).IsRequired();
+
+        etkinlik.HasData(
+            new Etkinlik { Id = 1, Ad = &quot;Web Geliştirme Atölyesi&quot;, Kontenjan = 25 },
+            new Etkinlik { Id = 2, Ad = &quot;SQL Server Semineri&quot;, Kontenjan = 40 });
+    }
+}</code></pre></div>
+<h2 id="baglanti">SQL Server bağlantısını ayarla</h2>
+
+<p>SQL Server’da bu ders için ayrı bir <code>DotNetAtolyeEtkinlikler</code> veritabanı kullan. Migration’ı çalıştıran hesabın şema oluşturma yetkisi olmalı. Veritabanını EF Core’un oluşturmasını bekliyorsan hesabın veritabanı oluşturma yetkisi de gerekir.</p>
+<p>Aşağıdaki komuttaki sunucu, kullanıcı ve parola alanlarını kendi geliştirme ortamına göre doldur. Uzak bir SQL Server kullanıyorsan sunucu adresini değiştir. <code>TrustServerCertificate=True</code> yalnızca kendinden imzalı sertifika kullanılan geliştirme sunucusu içindir. Güvenilen sertifikası olan sunucuda bu seçeneği kaldır.</p>
+<div class="code"><div class="code-head"><span>Terminal · Geliştirme bağlantısı</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet user-secrets set &quot;ConnectionStrings:EtkinlikDb&quot; &quot;Server=localhost,1433;Database=DotNetAtolyeEtkinlikler;User Id=KULLANICI;Password=PAROLA;Encrypt=True;TrustServerCertificate=True&quot;</code></pre></div>
+<p><code>user-secrets</code> ayarı proje dosyalarının dışında tutar. ASP.NET Core bunu Development ortamında yükler. <code>AddDbContext</code> varsayılan olarak her HTTP isteği için ayrı bir context sağlar. <code>UseSqlServer</code> kullanılacak veritabanı sağlayıcısını seçer.</p>
+<div class="code"><div class="code-head"><span>Program.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllersWithViews();
+
+var connection = builder.Configuration.GetConnectionString(&quot;EtkinlikDb&quot;)
+    ?? throw new InvalidOperationException(&quot;ConnectionStrings:EtkinlikDb ayarını girin.&quot;);
+
+builder.Services.AddDbContext&lt;EtkinlikDbContext&gt;(options =&gt;
+    options.UseSqlServer(connection));
+
+var app = builder.Build();
+
+app.MapControllerRoute(
+    name: &quot;default&quot;,
+    pattern: &quot;{controller=Etkinlikler}/{action=Index}/{id?}&quot;);
+
+app.Run();</code></pre></div>
+<h2 id="controller">Listeyi oku ve formu kaydet</h2>
+
+<p><code>ToListAsync</code> sorguyu SQL Server’da çalıştırır. Salt okunur liste için <code>AsNoTracking</code> kullanılır. Geçerli form gönderiminde <code>Add</code> yeni kaydı context’e ekler. <code>SaveChangesAsync</code> değişikliği SQL Server’a gönderir. Form hataları önceki dersteki gibi kullanıcıya gösterilir.</p>
+<div class="code"><div class="code-head"><span>Controllers/EtkinliklerController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Controllers;
+
+public class EtkinliklerController(EtkinlikDbContext db) : Controller
+{
+    [HttpGet]
+    public async Task&lt;IActionResult&gt; Index(CancellationToken cancellationToken)
+    {
+        var etkinlikler = await db.Etkinlikler
+            .AsNoTracking()
+            .OrderBy(etkinlik =&gt; etkinlik.Id)
+            .ToListAsync(cancellationToken);
+
+        return View(etkinlikler);
+    }
+
+    [HttpGet]
+    public IActionResult Ekle() =&gt; View(new EtkinlikFormu());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Ekle(EtkinlikFormu form, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(form);
+        }
+
+        db.Etkinlikler.Add(new Etkinlik
+        {
+            Ad = form.Ad!,
+            Kontenjan = form.Kontenjan!.Value
+        });
+
+        await db.SaveChangesAsync(cancellationToken);
+        return RedirectToAction(nameof(Index));
+    }
+}</code></pre></div>
+<h2 id="migration">İlk migration’ı oluştur ve uygula</h2>
+
+<p><strong>Kendi kopyandan ilerliyorsan</strong> ilk migration’ı aşağıdaki komutla üret. <strong>ZIP’i indirdiysen</strong> <code>IlkKurulum</code> zaten <code>Migrations</code> klasöründe bulunur ve doğrudan sonraki adıma geçebilirsin.</p>
+<div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add IlkKurulum</code></pre></div>
+<p>Windows PowerShell kullanıyorsan önce <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> çalıştır ve bu bölümdeki komutları <code>ASPNETCORE_ENVIRONMENT=Development</code> ön eki olmadan gir.</p>
+<p>Migration’daki <code>Up</code> metodu tabloyu, kısıtları ve örnek kayıtları oluşturur. <code>Down</code> metodu bu değişikliği geri alır. <code>ModelSnapshot</code> dosyası bir sonraki migration için modelin karşılaştırma temelidir.</p>
+<div class="code"><div class="code-head"><span>Terminal · SQL’i incele ve migration’ı uygula</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations script --idempotent -o IlkKurulum.sql
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update</code></pre></div>
+<p><code>migrations script</code> inceleyebileceğin bir SQL dosyası üretir. <code>database update</code> değişiklikleri uygular ve uygulanan migration’ı <code>__EFMigrationsHistory</code> tablosuna kaydeder.</p>
+<h2 id="dene">Çalıştır ve kalıcılığı kontrol et</h2>
+
+<div class="code"><div class="code-head"><span>Terminal · Uygulamayı başlat</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5082</code></pre></div>
+<p>Tarayıcıda <code>http://localhost:5082/</code> adresini aç. İlk iki etkinliği görmelisin. Formdan <strong>EF Core Atölyesi</strong> adında, <strong>30</strong> kişilik bir etkinlik ekle. Uygulamayı durdurup yeniden başlattığında yeni etkinlik listede kalmalı.</p>
+<div class="code"><div class="code-head"><span>T-SQL · Kayıtları ve migration geçmişini kontrol et</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>SELECT Id, Ad, Kontenjan
+FROM dbo.Etkinlikler
+ORDER BY Id;
+
+SELECT MigrationId
+FROM dbo.__EFMigrationsHistory;</code></pre></div>
+<h2 id="alistirma">Alıştırma</h2>
+
+<p><code>Etkinlik</code> modeline isteğe bağlı bir açıklama alanı ekle ve uzunluğunu 150 karakterle sınırla. <code>AciklamaEkle</code> adında yeni bir migration üret. Önce üretilen <code>AddColumn</code> işlemini incele, sonra migration’ı geliştirici veritabanına uygula ve mevcut üç kaydın yerinde kaldığını kontrol et.</p>
+<p><a href="https://learn.microsoft.com/tr-tr/ef/core/managing-schemas/migrations/">Microsoft Learn · EF Core migration belgeleri</a></p>
+<a class="button secondary" href="/dersler/mvc-temelleri/">Önceki ders · MVC temelleri</a>
+<a class="button primary" href="/dersler/t-sql-temelleri/">Sonraki ders · T-SQL temelleri</a>
+</div></main>
+<aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#paketler">Projeyi ve paketleri hazırla</a><a href="#context">Etkinlik modelini ve DbContext’i yaz</a><a href="#baglanti">SQL Server bağlantısını ayarla</a><a href="#controller">Listeyi oku ve formu kaydet</a><a href="#migration">İlk migration’ı oluştur ve uygula</a><a href="#dene">Çalıştır ve kalıcılığı kontrol et</a><a href="#alistirma">Alıştırma</a></nav></aside>
+</div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

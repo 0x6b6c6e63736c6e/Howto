@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Include, projection, AsNoTracking ve N+1 sorgularını ölç.">
+<title>EF Core sorgu performansı · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/" aria-current="page"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>EF Core</span></nav><h1>EF Core sorgu performansı</h1><p class="lead">Aynı etkinlik raporunda Include, projection, AsNoTracking ve N+1 yaklaşımını karşılaştır.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 15</span><span>Yaklaşık 40 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/ef-core-iliskiler-migration/">On dördüncü ders</a> ve SQL Server geliştirici veritabanı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-15.zip" download>Örnek projeyi indir</a><h2 id="karsilastirma">Aynı raporu dört şekilde oku</h2><p>Her yöntem etkinlik kimliği, adı ve katılımcı adlarını döndürür. İlk örnek etkinlikleri okur, ardından her etkinlik için ayrı katılımcı sorgusu çalıştırır. Bu açıkça yazılmış döngü N+1 davranışını gösterir. Projede lazy loading etkin değildir.</p><div class="table-wrap" tabindex="0"><table><thead><tr><th>Yöntem</th><th>Komut</th><th>İzlenen varlık</th></tr></thead><tbody><tr><td>N+1, izleme kapalı</td><td>3</td><td>0</td></tr><tr><td>Include</td><td>1</td><td>8</td></tr><tr><td>Include + AsNoTracking</td><td>1</td><td>0</td></tr><tr><td>Projection</td><td>1</td><td>0</td></tr></tbody></table></div><p>Tablo, iki etkinlik ve üç kayıt içeren SQLite testinin ölçümüdür. N+1 için sayı bir liste komutu ve etkinlik başına bir komuttur. İzlenen sekiz varlık iki etkinlik, üç kayıt ve üç katılımcıdır. Her yöntem ayrı bir DbContext kullanır.</p><h2 id="kod">Sorgular ve komut sayacı</h2><p><code>Include</code> ilişkili varlıkları yükler. <code>AsSingleQuery</code> bu karşılaştırmada tek sorgu davranışını açıkça seçer. <code>AsNoTracking</code> okunan varlıkları değişiklik takibine eklemez. Projection, <code>Select</code> ile raporun ihtiyaç duyduğu veriyi seçer.</p><div class="code"><div class="code-head"><span>Data/SorguKarsilastirmasi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.Data.Common;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
+namespace Etkinlikler.Data;
+
+public sealed class KomutSayaci : DbCommandInterceptor
+{
+    public List&lt;string&gt; Komutlar { get; } = [];
+
+    public override ValueTask&lt;InterceptionResult&lt;DbDataReader&gt;&gt; ReaderExecutingAsync(
+        DbCommand command, CommandEventData eventData,
+        InterceptionResult&lt;DbDataReader&gt; result, CancellationToken cancellationToken = default)
+    {
+        Komutlar.Add(command.CommandText);
+        return ValueTask.FromResult(result);
+    }
+}
+
+public sealed record RaporSatiri(int Id, string Etkinlik, IReadOnlyList&lt;string&gt; Katilimcilar);
+public sealed record Olcum(string Yontem, int KomutSayisi, int IzlenenVarlik,
+    IReadOnlyList&lt;RaporSatiri&gt; Sonuc, IReadOnlyList&lt;string&gt; Sql);
+
+public static class SorguKarsilastirmasi
+{
+    public static async Task&lt;IReadOnlyList&lt;Olcum&gt;&gt; CalistirAsync(
+        Func&lt;KomutSayaci, EtkinlikDbContext&gt; contextOlustur, CancellationToken cancellationToken = default)
+    {
+        var sonuclar = new List&lt;Olcum&gt;();
+        foreach (var yontem in new[] { &quot;N+1&quot;, &quot;Include&quot;, &quot;Include + AsNoTracking&quot;, &quot;Projection&quot; })
+        {
+            var sayac = new KomutSayaci();
+            await using var db = contextOlustur(sayac);
+            List&lt;RaporSatiri&gt; rapor;
+
+            if (yontem == &quot;N+1&quot;)
+            {
+                var etkinlikler = await db.Etkinlikler.AsNoTracking().OrderBy(e =&gt; e.Id).ToListAsync(cancellationToken);
+                rapor = [];
+                foreach (var etkinlik in etkinlikler)
+                {
+                    var adlar = await db.EtkinlikKayitlari.AsNoTracking()
+                        .Where(k =&gt; k.EtkinlikId == etkinlik.Id)
+                        .OrderBy(k =&gt; k.KatilimciId)
+                        .Select(k =&gt; k.Katilimci.Ad).ToListAsync(cancellationToken);
+                    rapor.Add(new RaporSatiri(etkinlik.Id, etkinlik.Ad, adlar));
+                }
+            }
+            else if (yontem == &quot;Projection&quot;)
+            {
+                var satirlar = await db.Etkinlikler.AsNoTracking().OrderBy(e =&gt; e.Id)
+                    .Select(e =&gt; new
+                    {
+                        e.Id,
+                        e.Ad,
+                        Katilimcilar = e.Kayitlar.OrderBy(k =&gt; k.KatilimciId)
+                            .Select(k =&gt; k.Katilimci.Ad).ToList()
+                    }).ToListAsync(cancellationToken);
+                rapor = satirlar.Select(e =&gt; new RaporSatiri(e.Id, e.Ad, e.Katilimcilar)).ToList();
+            }
+            else
+            {
+                var sorgu = db.Etkinlikler.Include(e =&gt; e.Kayitlar).ThenInclude(k =&gt; k.Katilimci)
+                    .AsSingleQuery().OrderBy(e =&gt; e.Id).AsQueryable();
+                if (yontem == &quot;Include + AsNoTracking&quot;)
+                    sorgu = sorgu.AsNoTracking();
+                var etkinlikler = await sorgu.ToListAsync(cancellationToken);
+                rapor = etkinlikler.Select(e =&gt; new RaporSatiri(e.Id, e.Ad,
+                    e.Kayitlar.OrderBy(k =&gt; k.KatilimciId).Select(k =&gt; k.Katilimci.Ad).ToList())).ToList();
+            }
+
+            sonuclar.Add(new Olcum(yontem, sayac.Komutlar.Count,
+                db.ChangeTracker.Entries().Count(), rapor, sayac.Komutlar.ToArray()));
+        }
+        return sonuclar;
+    }
+}</code></pre></div><p><code>KomutSayaci</code> bu örnekte asenkron reader komutlarını sayar ve SQL metnini kaydeder. Başka komut türlerini veya senkron sorguları kapsayan genel bir sayaç değildir. <code>ToQueryString()</code> sorgunun SQL gösterimini inceleyebilir. Buradaki sayaç ise gerçekten çalıştırılmaya gönderilen komutları kaydeder.</p><h2 id="sql">Üretilen SQL’i karşılaştır</h2><p>Aşağıdaki projection SQL’i, testte EF Core 10.0.12 SQLite sağlayıcısının ürettiği gerçek çıktıdır. İlişkili adları ve sonuçların eşleştirilmesi için gereken kimlikleri seçer. Include sorgusu buna ek olarak etkinliğin açıklama ve kontenjan alanlarını da getirir.</p><div class="code"><div class="code-head"><span>SQLite · Projection SQL</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>SELECT &quot;e&quot;.&quot;Id&quot;, &quot;e&quot;.&quot;Ad&quot;, &quot;s&quot;.&quot;Ad&quot;, &quot;s&quot;.&quot;EtkinlikId&quot;, &quot;s&quot;.&quot;KatilimciId&quot;, &quot;s&quot;.&quot;Id&quot;
+FROM &quot;Etkinlikler&quot; AS &quot;e&quot;
+LEFT JOIN (
+    SELECT &quot;k&quot;.&quot;Ad&quot;, &quot;e0&quot;.&quot;EtkinlikId&quot;, &quot;e0&quot;.&quot;KatilimciId&quot;, &quot;k&quot;.&quot;Id&quot;
+    FROM &quot;EtkinlikKayitlari&quot; AS &quot;e0&quot;
+    INNER JOIN &quot;Katilimcilar&quot; AS &quot;k&quot; ON &quot;e0&quot;.&quot;KatilimciId&quot; = &quot;k&quot;.&quot;Id&quot;
+) AS &quot;s&quot; ON &quot;e&quot;.&quot;Id&quot; = &quot;s&quot;.&quot;EtkinlikId&quot;
+ORDER BY &quot;e&quot;.&quot;Id&quot;, &quot;s&quot;.&quot;KatilimciId&quot;, &quot;s&quot;.&quot;EtkinlikId&quot;</code></pre></div><p>İzlemeli ve izlemesiz Include bu örnekte aynı SQL’i üretti. Aralarındaki fark, sonuçların DbContext tarafından takip edilmesidir. N+1 sorgusu ise etkinlik listesinden sonra her etkinliğin katılımcıları için aynı parametreli SQL’i tekrar çalıştırdı. SQL Server sağlayıcısının SQL sözdizimi ve planı farklı olabilir.</p><h2 id="calistir">Kendi veritabanında ölç</h2><p>On dördüncü dersin migration’ları uygulanmış geliştirici SQL Server veritabanını kullan. ZIP içindeki <code>Etkinlikler</code> klasöründe aşağıdaki komut, dört yöntemin komut sayısını, takip edilen varlıkları, sonuçları ve çalıştırılan SQL metinlerini yazar.</p><div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet restore
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile -- --sorgu-karsilastir</code></pre></div><p>PowerShell’de önce <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> çalıştır ve ön eki çıkar. Veritabanındaki etkinlik sayısı ve ilişkiler değişirse ölçülen sayılar da değişir. Karşılaştırma okuma yapar.</p><h2 id="test">Test ve değerlendirme</h2><p>Test her yöntemin aynı iki etkinliği ve üç katılımcıyı döndürdüğünü, komut sayılarını ve takip durumunu doğrular.</p><div class="code"><div class="code-head"><span>Terminal · ZIP içindeki ders klasöründen</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj
+dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj --filter FullyQualifiedName~SorguKarsilastirmasi --logger &#x27;console;verbosity=detailed&#x27;</code></pre></div><p>Komut sayısı tek başına hız ölçümü değildir. Veri miktarı, aktarılan satırlar, indeksler, ağ gecikmesi ve sorgu planı sonucu etkiler. Çok sayıda ilişkili kayıt JOIN sonucunda ana etkinlik verilerini tekrarlayabilir. Gerçek iş yükünde süre ve planı da ölç.</p><p>Alıştırma olarak ikinci etkinliğe katılımcı ekle ve dört yöntemin çıktılarını yeniden karşılaştır.</p><p><a href="https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying">Microsoft Learn · Verimli sorgulama</a></p><a class="button secondary" href="/dersler/ef-core-iliskiler-migration/">Önceki ders · İlişkiler ve migration</a> <a class="button primary" href="/dersler/ileri-tsql-ve-sorgu-planlari/">Sonraki ders · İleri T-SQL</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#karsilastirma">Aynı raporu dört şekilde oku</a><a href="#kod">Sorgular ve komut sayacı</a><a href="#sql">Üretilen SQL’i karşılaştır</a><a href="#calistir">Kendi veritabanında ölç</a><a href="#test">Test ve değerlendirme</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

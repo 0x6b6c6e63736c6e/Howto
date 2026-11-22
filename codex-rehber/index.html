@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="tr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f2">
+  <meta name="description" content="Codex'i profesyonel kullanmak için güncel, bağımsız, uygulamalı Türkçe rehber. CLI, IDE, Cloud, Worktree, AGENTS.md, Skills, güvenlik, test ve prompt örnekleri.">
+  <meta property="og:title" content="Codex Field Guide — Genel Kullanım Rehberi">
+  <meta property="og:description" content="Sıfırdan ileri seviyeye: geliştiriciler için uygulamalı Codex kullanım rehberi.">
+  <title>Codex Field Guide — Genel Kullanım Rehberi</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iIzFjMjkyMiIvPjxyZWN0IHg9IjE0IiB5PSIxNCIgd2lkdGg9IjE1IiBoZWlnaHQ9IjE1IiByeD0iMyIgZmlsbD0iI2Q2ZmI2YiIvPjxyZWN0IHg9IjM0IiB5PSIxNCIgd2lkdGg9IjE1IiBoZWlnaHQ9IjE1IiByeD0iMyIgZmlsbD0iI2VmZjdlOSIvPjxyZWN0IHg9IjE0IiB5PSIzNCIgd2lkdGg9IjE1IiBoZWlnaHQ9IjE1IiByeD0iMyIgZmlsbD0iI2VmZjdlOSIvPjxyZWN0IHg9IjM0IiB5PSIzNCIgd2lkdGg9IjE1IiBoZWlnaHQ9IjE1IiByeD0iMyIgZmlsbD0iI2Q2ZmI2YiIvPjwvc3ZnPgo=" type="image/svg+xml">
+  <style>
+/* Codex Field Guide - standalone responsive stylesheet */
+:root{--bg:#f6f7f2;--paper:#fff;--surface:#f0f1ea;--surface-2:#e9ece4;--ink:#19251f;--muted:#65716a;--line:#dbe0d7;--lime:#d6fb6b;--lime-dark:#c7f34d;--dark:#1c2922;--code:#18231e;--code-ink:#e7efe7;--shadow:0 18px 55px rgba(28,41,34,.07);--radius:16px;--sidebar-width:256px;--text:16px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:104px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Aptos","Segoe UI",system-ui,-apple-system,sans-serif;font-size:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #86ba30;outline-offset:3px}
+::selection{background:var(--lime);color:#152316}
+[hidden]{display:none!important}
+.skip-link{position:fixed;top:-100px;left:20px;padding:12px 18px;background:var(--ink);color:#fff;z-index:999}
+.skip-link:focus{top:12px}
+.app-shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-width);position:fixed;inset:0 auto 0 0;z-index:30;background:var(--paper);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:29px 18px 24px;overflow-y:auto;scrollbar-width:thin}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 12px 37px}
+.brand-mark{width:37px;height:37px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:3px;transform:rotate(-12deg)}
+.brand-mark span{background:var(--ink);border-radius:3px}.brand-mark span:last-child{background:#a3e12f}
+.brand-copy{line-height:1;display:flex;flex-direction:column;gap:5px}.brand-copy strong{font-family:Georgia,serif;font-size:22px;letter-spacing:-1.3px}.brand-star{font-family:inherit;color:#8fbf29;margin-left:2px}.brand-copy small{font-weight:800;font-size:9px;letter-spacing:1.8px;color:var(--muted)}
+.sidebar-label{display:flex;justify-content:space-between;padding:0 12px 14px;font-size:9px;font-weight:900;letter-spacing:1.8px;color:var(--muted)}.sidebar-label span{letter-spacing:.5px;font-weight:700}
+.chapter-nav{display:flex;flex-direction:column;gap:2px}.chapter-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;font-size:12px;font-weight:650;color:var(--muted);transition:background .16s,color .16s}.chapter-nav a>span{font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;min-width:21px;color:#9aa69b}.chapter-nav a:hover{color:var(--ink);background:var(--surface)}.chapter-nav a.active{background:var(--lime);color:#172319}.chapter-nav a.active>span{color:#4e7028}
+.sidebar-bottom{margin-top:auto;padding:28px 10px 0}.tiny-label{font-size:9px;letter-spacing:1.7px;font-weight:900;color:var(--muted);margin-bottom:13px}.progress-line{height:5px;border-radius:9px;background:var(--surface-2);overflow:hidden}.progress-line div{width:0;height:100%;background:#9bc940;transition:width .2s}.sidebar-bottom p{font-size:11px;color:var(--muted);margin:9px 0 20px}.sidebar-source{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:15px;font-size:12px;font-weight:750}.sidebar-source span{font-size:17px}
+.page-area{flex:1;margin-left:var(--sidebar-width);min-width:0}.topbar{height:74px;background:rgba(246,247,242,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:0 clamp(24px,4.4vw,66px);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:15;gap:20px}.topbar-left{display:flex;align-items:center;gap:10px}.topbar-kicker{font-size:10px;letter-spacing:2.2px;font-weight:850}.topbar-actions{display:flex;align-items:center;gap:12px}.search-box{width:220px;height:37px;border:1px solid var(--line);background:var(--paper);border-radius:8px;display:flex;align-items:center;padding:0 9px 0 12px;gap:8px}.search-box:focus-within{border-color:#99be68}.search-symbol{font-size:22px;color:var(--muted);line-height:1}.search-box input{border:0;background:transparent;min-width:0;width:100%;font-size:12px;color:var(--ink);outline:none}.search-box input:focus-visible{outline:0}.search-box kbd{font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted);line-height:20px}.icon-btn{width:37px;height:37px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font-size:19px;display:grid;place-items:center}.top-cta{font-size:11px;font-weight:850;background:var(--ink);color:#fff;padding:12px 16px;border-radius:8px;white-space:nowrap}.top-cta span{margin-left:10px}.mobile-menu{display:none}
+.hero{margin:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(340px,.9fr);min-height:505px;border-bottom:1px solid var(--line)}.hero-copy{padding:clamp(45px,6.5vw,95px) clamp(25px,5vw,80px) 35px clamp(25px,5vw,80px);min-width:0}.eyebrow{font-size:9px;letter-spacing:1.5px;font-weight:850;display:flex;align-items:center;gap:8px;color:var(--muted);white-space:nowrap}.eyebrow-dot{width:8px;height:8px;background:#a2d045;border-radius:50%;box-shadow:0 0 0 4px #e6f4c8}.hero-edition{color:var(--ink);border:1px solid var(--line);padding:4px 7px;border-radius:4px;margin-left:5px;font-size:9px;white-space:nowrap}.hero h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(52px,5.5vw,96px);line-height:1.03;letter-spacing:-4px;font-weight:600;margin:31px 0 24px;white-space:nowrap}.hero h1 em{font-weight:400;color:#6c796d}.highlight-word{position:relative;z-index:1}.highlight-word:after{content:"";position:absolute;bottom:5%;left:0;right:0;height:23%;background:var(--lime);z-index:-1;transform:rotate(-1deg)}.hero-lead{font-size:15px;max-width:535px;line-height:1.75;color:var(--muted);margin-bottom:26px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap}.button{display:inline-flex;align-items:center;justify-content:center;gap:18px;padding:13px 17px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:850;transition:transform .15s,background .15s}.button:hover{transform:translateY(-2px)}.button-dark{background:var(--dark);color:#fff;border-color:var(--dark)}.button-ghost{background:var(--paper);color:var(--ink)}.button-lime{background:var(--lime);border-color:var(--lime);color:#162417}.hero-meta{margin-top:40px;display:flex;flex-wrap:wrap;gap:18px;font-size:10px;font-weight:750;color:var(--muted)}.hero-meta span{display:flex;align-items:center;gap:7px}.hero-meta i{width:5px;height:5px;border-radius:50%;background:#9bb937}
+.hero-visual{position:relative;background:#d4f380;min-width:0;overflow:hidden;display:flex;justify-content:center;align-items:center;padding:66px 28px 50px}.hero-visual:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(39,69,33,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(39,69,33,.10) 1px,transparent 1px);background-size:38px 38px;opacity:.65}.visual-orbit{position:absolute;pointer-events:none;border:1px solid rgba(32,55,22,.22);border-radius:50%;width:550px;height:550px;left:50%;top:48%;transform:translate(-50%,-50%)}.orbit-two{width:330px;height:330px}.visual-topline{position:absolute;top:24px;left:26px;right:26px;display:flex;justify-content:space-between;font-size:9px;font-weight:850;letter-spacing:1.4px}.visual-mini-led{letter-spacing:.5px}.terminal-window{width:min(100%,438px);border:1px solid #34463d;background:var(--code);box-shadow:16px 16px 0 rgba(32,44,30,.14);border-radius:13px;position:relative;z-index:2;transform:rotate(-3deg)}.terminal-header{height:42px;border-bottom:1px solid #35483d;display:flex;align-items:center;justify-content:space-between;color:#a4b7ac;padding:0 15px;font-size:10px;font-family:ui-monospace,monospace}.traffic{display:flex;gap:5px}.traffic i{width:7px;height:7px;border-radius:50%;background:#536458}.traffic i:first-child{background:#d9a7a2}.traffic i:nth-child(2){background:#e9d79e}.traffic i:last-child{background:#a0c19b}.terminal-body{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12px;line-height:2.25;padding:26px 22px 30px;color:#f0f2ee;white-space:nowrap;overflow:hidden}.term-prompt{color:#d8fa79;margin-right:9px}.term-muted{color:#7e9f8e;padding-left:26px}.term-green{color:#d8fb78;padding-left:26px}.term-cursor{color:#d8fb78}.visual-stamp{position:absolute;bottom:27px;left:26px;right:26px;display:flex;justify-content:space-between;font-size:10px;font-weight:850;letter-spacing:1.2px}.corner-plus{position:absolute;right:24px;top:55px;font-size:66px;transform:rotate(12deg);color:rgba(25,43,27,.23)}
+.strip{min-height:54px;background:var(--ink);color:var(--lime);display:flex;justify-content:space-around;align-items:center;gap:16px;padding:12px 22px;font-size:11px;font-weight:900;letter-spacing:2px}.strip b{color:#6e896b;font-size:15px;font-weight:400}
+.reading-area{max-width:1030px;margin:auto;padding:0 clamp(26px,5.2vw,75px)}.reading-head{font-size:10px;font-weight:850;color:var(--muted);letter-spacing:1.3px;display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding:31px 0 15px}.reading-head span:last-child{font-weight:600;letter-spacing:.2px}.guide-section{padding:90px 0 75px;border-bottom:1px solid var(--line);scroll-margin-top:80px}.section-number{font-family:ui-monospace,Consolas,monospace;letter-spacing:1.5px;color:#668733;font-size:11px;font-weight:850;margin-bottom:15px}.guide-section h2,.references-section h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(35px,4.2vw,55px);font-weight:500;line-height:1.14;letter-spacing:-1.8px;margin:0 0 25px}.guide-section h2 em,.references-section h2 em{color:#879487;font-weight:400}.guide-section>p,.references-section>p{color:var(--muted);font-size:15px;line-height:1.85;max-width:800px;margin:0 0 25px}.guide-section p.intro{font-size:18px;line-height:1.77;color:#4d5f50}.guide-section h3{font-size:19px;font-weight:750;letter-spacing:-.4px;margin:30px 0 12px}.guide-section a:not(.button),.references-section a{transition:color .15s}.guide-section a:not(.button):hover,.references-section a:hover{color:#659624}.source-line{font-size:12px!important;margin-top:20px!important;color:var(--muted)!important}.source-line a{font-weight:750;border-bottom:1px solid #aeb9a8}.guide-section code{font-size:.89em;background:var(--surface-2);padding:2px 5px;border-radius:4px;color:var(--ink)}
+.principle-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper);margin-top:34px}.principle{padding:26px 23px;border-right:1px solid var(--line)}.principle:last-child{border-right:none}.principle-icon{font-family:Georgia,serif;font-size:30px;color:#a0c366}.principle h3{margin:19px 0 8px;font-size:15px}.principle p{margin:0;color:var(--muted);font-size:13px;line-height:1.75}.note{background:#edf2e3;border-left:4px solid #9dc052;padding:20px 22px;margin-top:27px;border-radius:0 10px 10px 0}.note strong{display:block;font-size:14px}.note p{margin:5px 0 0;font-size:13px;line-height:1.8;color:#536455}.note-ink{background:#1f2d25;border-left-color:var(--lime);color:#fff}.note-ink p{color:#c0d1c0}
+.comparison-table{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin:28px 0 17px}.comparison-table table{border-collapse:collapse;text-align:left;width:100%;min-width:570px;font-size:13px}.comparison-table th{text-transform:uppercase;letter-spacing:1px;font-size:10px;background:var(--surface);padding:16px 19px;white-space:nowrap}.comparison-table td{padding:18px 19px;border-top:1px solid var(--line);vertical-align:top;color:var(--muted);line-height:1.65}.comparison-table td strong{color:var(--ink)}.comparison-table code{white-space:nowrap}
+.tab-group{margin-top:26px}.tab-list{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:0}.tab{background:transparent;border:0;color:var(--muted);font-size:12px;font-weight:800;padding:13px 19px;border-bottom:3px solid transparent}.tab.is-active{color:var(--ink);border-color:#9dca42}.tab-pane .code-block{margin-top:0;border-radius:0 10px 10px 10px}
+.code-block{background:var(--code);color:var(--code-ink);border:1px solid #2b4136;border-radius:12px;overflow:hidden;margin:27px 0}.code-caption{min-height:46px;border-bottom:1px solid #33483b;padding:0 17px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#9db3a5;font-size:11px;letter-spacing:.2px}.code-caption button{border:1px solid #476052;background:#263a2e;border-radius:5px;color:#e3f4df;padding:5px 10px;font-size:10px;font-weight:750;white-space:nowrap}.code-caption button:hover{background:#35513d}.code-block pre{margin:0;padding:22px;overflow:auto;font-family:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.9;tab-size:2;white-space:pre}.guide-section .code-block code{font-size:inherit;color:var(--code-ink);background:transparent;padding:0}
+.steps{margin:23px 0 0;display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.steps>div{display:flex;gap:14px;padding:18px;background:var(--paper);border:1px solid var(--line);border-radius:10px}.steps span{width:31px;height:31px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--lime);font:800 12px ui-monospace,monospace}.steps p{font-size:12px;color:var(--muted);margin:0;line-height:1.75}.steps strong{color:var(--ink)}
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);margin:30px 0;gap:8px}.pipeline>div{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:20px 10px;min-height:128px;position:relative}.pipeline>div:not(:last-child):after{content:"→";position:absolute;right:-11px;top:50%;background:var(--lime);color:#293c25;border-radius:50%;width:17px;height:17px;display:grid;place-items:center;font-size:12px;z-index:1}.pipeline span{font:800 10px ui-monospace,monospace;color:#83a951;display:block;margin-bottom:21px}.pipeline strong{display:block;font-size:11px;letter-spacing:.3px}.pipeline small{display:block;font-size:10px;color:var(--muted);line-height:1.6;margin-top:7px}
+.prompt-anatomy{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:30px}.prompt-anatomy>div{padding:14px 11px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.prompt-anatomy b{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:var(--lime);font:750 15px Georgia,serif}.prompt-anatomy strong{font-size:12px}.prompt-anatomy small{font-size:10px;color:var(--muted);display:block;line-height:1.6;margin-top:6px}.split-example{display:grid;grid-template-columns:1fr 1fr;gap:12px}.split-example>div{border-radius:10px;padding:23px;border:1px solid var(--line);background:var(--paper)}.split-example span{font-size:10px;letter-spacing:1.4px;font-weight:900}.bad-example span{color:#bb685e}.good-example span{color:#518822}.split-example p{font-size:13px;line-height:1.7;margin:13px 0 0}
+.feature-list{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:25px}.feature-list>div{display:flex;align-items:start;gap:15px;padding:18px 3px;border-bottom:1px solid var(--line)}.bullet-icon{width:34px;height:34px;background:var(--lime);display:grid;place-items:center;border-radius:8px;font-weight:800;flex:none;font-size:16px}.feature-list h3{font-size:15px;margin:1px 0 3px}.feature-list p{font-size:13px;color:var(--muted);margin:0;line-height:1.75}.feature-list.compact .bullet-icon{background:#f3e4d0;color:#9b5f25}
+.filetree{border-radius:12px;padding:20px 24px;background:var(--paper);border:1px solid var(--line);font-family:ui-monospace,Consolas,monospace;font-size:13px;line-height:2.5}.filetree>div{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.filetree>div:nth-child(n+2){padding-left:24px}.filetree>div:nth-child(3){padding-left:47px}.tree-dot{font-size:8px;color:#91bb41}.filetree small{font:11px "Segoe UI",sans-serif;color:var(--muted);margin-left:8px}
+.mode-cards,.stack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:30px 0}.mode-card,.stack-grid article{padding:23px 18px;border:1px solid var(--line);border-radius:12px;background:var(--paper);min-width:0}.mode-card.accent-card{background:var(--lime);border-color:#c2e966}.mode-label,.stack-tag{letter-spacing:1.2px;font-size:9px;font-weight:900;color:#638a2c}.mode-card h3,.stack-grid h3{font-size:16px;margin:16px 0 9px}.mode-card p,.stack-grid p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}.accent-card p{color:#50663c}.stack-grid article>code{font:11px ui-monospace,monospace;display:block;margin-top:20px;overflow-wrap:anywhere;color:#49633f}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:32px}.qa-grid>div{background:var(--paper);border:1px solid var(--line);padding:18px;border-radius:9px}.qa-grid span{font:850 12px ui-monospace,monospace;color:#8ba92d}.qa-grid h3{font-size:13px;margin:24px 0 7px}.qa-grid p{font-size:11px;color:var(--muted);line-height:1.7;margin:0}.security-banner{background:#25362a;color:#fff;border-radius:13px;display:flex;gap:18px;padding:27px;margin-top:30px}.shield{width:58px;height:58px;display:grid;place-items:center;flex:none;border:1px solid #819c7c;border-radius:50%;font-size:31px;color:var(--lime)}.security-banner h3{margin:0 0 7px;font-size:19px}.security-banner p{font-size:13px;color:#bccdba;line-height:1.8;margin:0}
+.prompt-lab{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:28px}.lab-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:24px;border-bottom:1px solid var(--line)}.lab-kicker{font:850 9px ui-monospace,monospace;letter-spacing:1.6px;color:#7d994b}.lab-head h3{margin:6px 0 0;font-size:21px}.lab-badge{font:800 10px ui-monospace,monospace;border:1px solid var(--line);padding:7px 9px;border-radius:6px;white-space:nowrap}.lab-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:24px 24px 0}.lab-fields label{font-size:11px;font-weight:850;display:flex;flex-direction:column;gap:9px}.lab-fields input,.lab-fields select{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:12px 13px;width:100%;color:var(--ink);font-size:12px}.lab-output{margin:23px 24px 0;padding:22px;background:var(--code);color:var(--code-ink);font:12px/1.85 ui-monospace,"SFMono-Regular",Consolas,monospace;white-space:pre-wrap;border-radius:9px;min-height:270px;overflow-wrap:anywhere}.lab-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px 24px}.lab-footer span{font-size:11px;color:var(--muted)}
+.accordion-set{border-top:1px solid var(--line);margin-top:28px}.accordion-set details{border-bottom:1px solid var(--line);padding:0}.accordion-set summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:22px;padding:22px 4px;font-size:15px;font-weight:750}.accordion-set summary::-webkit-details-marker{display:none}.accordion-set summary span{font-size:20px;line-height:1;transition:transform .15s;color:#8da93a}.accordion-set details[open] summary span{transform:rotate(45deg)}.accordion-set details p{margin:0 0 22px;padding:0 10% 0 4px;color:var(--muted);font-size:13px;line-height:1.8}
+.checklist-head{display:flex;justify-content:space-between;align-items:center;margin-top:30px;font-size:13px}.checklist-head span{color:#659327;font-weight:900;font-family:ui-monospace,monospace}.check-progress{height:7px;border-radius:20px;overflow:hidden;background:var(--surface-2);margin:15px 0 23px}.check-progress div{height:100%;width:0;background:#9acb3c;transition:width .3s}.checklist{border:1px solid var(--line);background:var(--paper);border-radius:12px;overflow:hidden}.checklist label{display:flex;align-items:center;gap:13px;padding:15px 18px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}.checklist label:last-child{border-bottom:none}.checklist label:hover{background:var(--surface)}.checklist input{accent-color:#76a631;width:18px;height:18px;flex:none}.checklist input:checked+span{text-decoration:line-through;color:var(--muted)}.checklist-footer{display:flex;justify-content:space-between;padding:15px 3px;font-size:12px;color:var(--muted)}.checklist-footer button{font-size:12px;font-weight:750;border:0;background:transparent;color:var(--ink)}
+.references-section{padding:85px 0 100px}.refs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:30px}.refs-grid a{display:flex;justify-content:space-between;gap:10px;padding:16px 17px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:12px;font-weight:750}.refs-grid a span{color:#659327}.site-footer{border-top:1px solid var(--line);padding:25px clamp(26px,5.2vw,75px);display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:10px;color:var(--muted)}.footer-logo{font-family:Georgia,serif;font-size:14px;font-weight:bold;color:var(--ink)}.footer-logo span{color:#91bc35}.site-footer>div:last-child span{margin-left:12px}
+.empty-search{border:1px solid var(--line);margin:30px clamp(24px,5vw,70px);padding:30px;background:var(--paper);border-radius:12px;text-align:center}.empty-search p{font-size:13px;color:var(--muted)}.toast{position:fixed;right:24px;bottom:22px;z-index:100;background:#25392b;color:#e9f8e0;padding:12px 18px;border-radius:10px;box-shadow:var(--shadow);font-size:12px;font-weight:800;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .2s,transform .2s}.toast.visible{opacity:1;transform:translateY(0)}.mobile-scrim{display:none}
+/* dark variant */
+html[data-theme="dark"]{--bg:#171d19;--paper:#222b25;--surface:#2a362e;--surface-2:#324337;--ink:#eef3e9;--muted:#b1c2b3;--line:#3a483e;--lime:#b8eb5e;--lime-dark:#c7f34d;--dark:#c9e5b4;--code:#101914;--code-ink:#e6f1e5;--shadow:0 18px 55px rgba(0,0,0,.2)}
+html[data-theme="dark"] .topbar{background:rgba(23,29,25,.92)}html[data-theme="dark"] .brand-mark span{background:#dbe8d4}html[data-theme="dark"] .brand-mark span:last-child{background:var(--lime)}html[data-theme="dark"] .hero h1 em,html[data-theme="dark"] .guide-section h2 em,html[data-theme="dark"] .references-section h2 em{color:#a3b5a6}html[data-theme="dark"] .button-dark,html[data-theme="dark"] .top-cta{color:#18271d}html[data-theme="dark"] .button-ghost{background:var(--paper)}html[data-theme="dark"] .hero-visual{background:#a5c86a}html[data-theme="dark"] .highlight-word:after{background:#7b9b3f}html[data-theme="dark"] .note:not(.note-ink){background:#29392c}html[data-theme="dark"] .note p{color:#b3c6b6}html[data-theme="dark"] .note-ink{background:#0c170f}html[data-theme="dark"] .security-banner{background:#0d170f}html[data-theme="dark"] .accent-card{background:#3c582b}html[data-theme="dark"] .accent-card p{color:#d0e5ca}html[data-theme="dark"] .code-block{border-color:#425649}html[data-theme="dark"] .good-example span{color:#a8dc6c}
+@media(max-width:1250px){:root{--sidebar-width:230px}.sidebar{padding-left:10px;padding-right:10px}.topbar{padding-left:28px;padding-right:28px}.hero-copy{padding:55px 35px 32px}.hero h1{font-size:clamp(47px,5vw,72px)}.hero-visual{padding:55px 20px}.terminal-body{font-size:11px}.reading-area{padding:0 48px}}
+@media(max-width:1020px){.hero{grid-template-columns:1fr}.hero-visual{min-height:325px}.hero h1{font-size:clamp(60px,8vw,92px)}.hero-copy{padding:65px 46px 45px}.hero-meta{margin-top:28px}.terminal-window{max-width:480px}.principle-grid,.mode-cards,.stack-grid{grid-template-columns:1fr 1fr}.principle:nth-child(2){border-right:none}.principle:last-child{grid-column:1/-1;border-top:1px solid var(--line)}.prompt-anatomy{grid-template-columns:repeat(3,1fr)}.topbar-kicker{display:none}.top-cta{display:none}.qa-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:750px){:root{--sidebar-width:0px}.sidebar{transform:translateX(-100%);width:min(300px,84vw);transition:transform .25s;box-shadow:8px 0 40px rgba(0,0,0,.11)}body.menu-open .sidebar{transform:translateX(0)}.page-area{margin-left:0}.mobile-menu{display:grid}.mobile-scrim{position:fixed;inset:0;z-index:25;background:rgba(12,20,14,.52)}body.menu-open .mobile-scrim{display:block!important}.topbar{height:65px;padding:0 17px}.search-box{width:clamp(155px,45vw,250px)}.hero-copy{padding:52px 24px 34px}.hero h1{font-size:clamp(49px,9vw,72px);letter-spacing:-2.3px}.hero-lead{font-size:14px}.hero-meta{gap:11px;font-size:9px}.hero-visual{min-height:300px}.strip{gap:8px;font-size:8px;letter-spacing:1.2px}.reading-area{padding:0 23px}.guide-section{padding:72px 0 61px}.reading-head span:last-child{display:none}.guide-section>p{font-size:14px}.principle-grid,.mode-cards,.stack-grid{grid-template-columns:1fr}.principle{border-right:0;border-bottom:1px solid var(--line)}.principle:last-child{grid-column:auto;border-top:0;border-bottom:0}.steps{grid-template-columns:1fr}.pipeline{grid-template-columns:1fr}.pipeline>div{min-height:unset;display:grid;grid-template-columns:35px 1fr;gap:4px 8px;padding:14px}.pipeline>div span{grid-row:span 2;margin:0;padding:4px 0}.pipeline>div:after{display:none!important}.pipeline small{margin:0}.prompt-anatomy{grid-template-columns:repeat(2,1fr)}.qa-grid{grid-template-columns:repeat(2,1fr)}.lab-fields{grid-template-columns:1fr}.split-example{grid-template-columns:1fr}.refs-grid{grid-template-columns:1fr}.site-footer{padding:24px;flex-direction:column;align-items:flex-start}.filetree{font-size:11px}.hero-visual .visual-stamp{font-size:8px}}
+@media(max-width:450px){.hero h1{font-size:clamp(44px,11vw,57px)}.eyebrow{font-size:8px;letter-spacing:.7px}.hero-edition{display:none}.hero-actions{flex-direction:column;align-items:stretch}.hero-visual{min-height:275px}.terminal-window{transform:rotate(-2deg)}.terminal-body{font-size:9.4px;padding:23px 13px}.terminal-header{font-size:9px}.hero-meta{gap:8px 12px}.strip span:last-child,.strip b:last-of-type{display:none}.prompt-anatomy{grid-template-columns:1fr 1fr}.qa-grid{grid-template-columns:1fr 1fr}.lab-head{padding:18px}.lab-badge{display:none}.lab-fields{padding:18px 18px 0}.lab-output{margin:18px 18px 0;padding:17px;font-size:11px}.lab-footer{padding:17px 18px;flex-direction:column;align-items:stretch}.lab-footer .button{width:100%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}}
+@media print{.sidebar,.topbar,.hero-visual,.strip,.hero-actions,.code-caption button,.lab-footer,.site-footer,.mobile-scrim,.toast,.checklist-footer{display:none!important}.page-area{margin:0}.hero{display:block;min-height:0}.hero-copy{padding:24px 0}.hero h1{font-size:46px}.reading-area{max-width:100%;padding:0}.guide-section{padding:30px 0;break-inside:avoid}.code-block{break-inside:avoid}.guide-section h2{font-size:29px}body{background:#fff;color:#111}}
+/* Search surface */
+body.search-mode .hero,body.search-mode .strip{display:none}
+body.search-mode .reading-head{padding-top:24px}
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main">İçeriğe geç</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Bölüm navigasyonu">
+      <a class="brand" href="#top" aria-label="Codex Field Guide ana sayfa">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span class="brand-copy"><strong>CODEX<span class="brand-star">✳</span></strong><small>FIELD GUIDE / TR</small></span>
+      </a>
+      <div class="sidebar-label">ÖĞRENME YOLU <span>16 BÖLÜM</span></div>
+      <nav class="chapter-nav" id="chapter-nav" aria-label="Rehber bölümleri">
+        <a href="#overview" data-nav><span>01</span> Genel bakış</a>
+        <a href="#surfaces" data-nav><span>02</span> Çalışma ortamları</a>
+        <a href="#setup" data-nav><span>03</span> Kurulum ve başlangıç</a>
+        <a href="#workflow" data-nav><span>04</span> Doğru iş akışı</a>
+        <a href="#prompting" data-nav><span>05</span> İyi görev tanımı</a>
+        <a href="#context" data-nav><span>06</span> Bağlam yönetimi</a>
+        <a href="#agents" data-nav><span>07</span> AGENTS.md</a>
+        <a href="#git" data-nav><span>08</span> Git ve Worktree</a>
+        <a href="#verification" data-nav><span>09</span> Test ve code review</a>
+        <a href="#security" data-nav><span>10</span> İzinler ve güvenlik</a>
+        <a href="#skills" data-nav><span>11</span> Skills ve MCP</a>
+        <a href="#automation" data-nav><span>12</span> Otomasyon ve CI</a>
+        <a href="#performance" data-nav><span>13</span> Model ve verimlilik</a>
+        <a href="#patterns" data-nav><span>14</span> Hazır prompt atölyesi</a>
+        <a href="#pitfalls" data-nav><span>15</span> Sık yapılan hatalar</a>
+        <a href="#checklist" data-nav><span>16</span> Kontrol listesi</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="tiny-label">REHBER İLERLEMESİ</div>
+        <div class="progress-line"><div id="sidebar-progress"></div></div>
+        <p id="sidebar-progress-label">0 / 8 kontrol tamamlandı</p>
+        <a class="sidebar-source" href="#references">Resmî kaynaklar <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+    <div class="page-area" id="top">
+      <header class="topbar">
+        <div class="topbar-left"><button class="icon-btn mobile-menu" id="menu-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Menüyü aç">☰</button><span class="topbar-kicker">THE PRACTICAL HANDBOOK</span></div>
+        <div class="topbar-actions">
+          <label class="search-box" for="site-search"><span class="search-symbol" aria-hidden="true">⌕</span><input id="site-search" type="search" placeholder="Rehberde ara..." autocomplete="off" aria-label="Bölümlerde ara"><kbd>/</kbd></label>
+          <button class="icon-btn theme-toggle" id="theme-toggle" title="Açık/koyu tema" aria-label="Temayı değiştir"><span id="theme-icon" aria-hidden="true">◐</span></button>
+          <a class="top-cta" href="#patterns">Prompt kütüphanesi <span aria-hidden="true">↗</span></a>
+        </div>
+      </header>
+      <main id="main">
+        <div id="no-results" class="empty-search" hidden role="status"><strong>Sonuç bulunamadı.</strong><p>Başka bir kelime deneyin veya aramayı temizleyin.</p><button id="clear-search" class="button button-dark">Aramayı temizle</button></div>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <div class="eyebrow"><span class="eyebrow-dot"></span> OPENAI CODEX · BAĞIMSIZ TÜRKÇE REHBER <span class="hero-edition">2026 EDITION</span></div>
+            <h1 id="hero-title">Daha iyi<br><em>komut verme.</em><br>Daha iyi <span class="highlight-word">iş yönet.</span></h1>
+            <p class="hero-lead">Codex'i bir otomatik tamamlama aracı gibi değil; kodu inceleyen, değiştiren, test eden ve senin kontrolünde çalışan bir geliştirme ajanı olarak kullan.</p>
+            <div class="hero-actions"><a class="button button-dark" href="#overview">Rehbere başla <span aria-hidden="true">↗</span></a><a class="button button-ghost" href="#patterns">Hazır promptlara git <span aria-hidden="true">→</span></a></div>
+            <div class="hero-meta"><span><i></i> 16 modül</span><span><i></i> Uygulamalı örnekler</span><span><i></i> Bağımsız HTML / CSS / JS</span></div>
+          </div>
+          <div class="hero-visual" aria-label="Örnek Codex çalışma akışı çizimi">
+            <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+            <div class="visual-topline"><span>CODING AGENT / 01</span><span class="visual-mini-led">● LIVE WORKFLOW</span></div>
+            <div class="terminal-window"><div class="terminal-header"><div class="traffic"><i></i><i></i><i></i></div><span>agent / workspace</span><span>↗</span></div><div class="terminal-body"><div><span class="term-prompt">›</span> Inspect the repository</div><div class="term-muted">✓ Context collected</div><div><span class="term-prompt">›</span> Implement scoped change</div><div class="term-muted">✓ 3 files updated</div><div><span class="term-prompt">›</span> Run relevant tests</div><div class="term-green">✓ 24 tests passed</div><div class="term-cursor">▌</div></div></div>
+            <div class="visual-stamp"><span>01 / PLAN</span><span>02 / BUILD</span><span>03 / VERIFY</span></div>
+            <div class="corner-plus">✳</div>
+          </div>
+        </section>
+        <div class="strip"><span>ANLA</span><b>✳</b><span>SINIRLA</span><b>✳</b><span>UYGULA</span><b>✳</b><span>DOĞRULA</span><b>✳</b><span>İNCELE</span></div>
+        <div class="reading-area">
+          <div class="reading-head"><span>REHBER / TAM KAPSAM</span><span>Son içerik gözden geçirme: 22 Kasım 2026</span></div>
+
+          <section id="overview" class="guide-section" data-section><div class="section-number">01 / TEMELLER</div><h2>Codex nedir, <em>ne değildir?</em></h2><p class="intro">Codex; kaynak kodu ve proje bağlamını okuyabilen, dosyalarda değişiklik yapabilen ve izin verilen ortamlarda komut/test çalıştırabilen bir yazılım geliştirme ajanıdır. İyi sonuç almak, işi ona bütünüyle bırakmak değil; amaç, kapsam ve doğrulama ölçütlerini netleştirmektir.</p>
+            <div class="principle-grid"><div class="principle"><span class="principle-icon">01</span><h3>Hedefi tanımla</h3><p>“Bunu düzelt” yerine beklenen davranışı ve tamamlanma koşulunu anlat.</p></div><div class="principle"><span class="principle-icon">02</span><h3>Yetkiyi sınırla</h3><p>Hangi dosya, ortam, servis ve veritabanına dokunabileceğini belirt.</p></div><div class="principle"><span class="principle-icon">03</span><h3>Kanıt iste</h3><p>Test, build, diff veya ölçüm olmadan “tamamlandı” demek yeterli değildir.</p></div></div>
+            <div class="note note-ink"><strong>Temel ilke</strong><p>Codex uygulama yapabilir; ürün kararları, risk kabulü ve üretime alma sorumluluğu insanda kalır.</p></div>
+          </section>
+
+          <section id="surfaces" class="guide-section" data-section><div class="section-number">02 / ARAÇLAR</div><h2>Hangi ortamı <em>seçmeliyim?</em></h2><p>İhtiyaca göre farklı Codex yüzeylerini kullanabilirsin. Uygulama ve kullanılabilir seçenekler sürüme, platforma ve erişim yetkilerine göre değişebilir.</p>
+            <div class="comparison-table" role="region" aria-label="Codex çalışma ortamları karşılaştırması" tabindex="0"><table><thead><tr><th>Yüzey</th><th>En uygun kullanım</th><th>Dikkat edilmesi gereken</th></tr></thead><tbody><tr><td><strong>Masaüstü uygulaması</strong></td><td>Yerel projeler, Local / Worktree, görsel iş akışı</td><td>Yerel dosyalar ve çalışma ortamı</td></tr><tr><td><strong>CLI</strong></td><td>Terminalde geliştirme ve script tabanlı işler</td><td>Aktif dizin, sandbox ve komut yetkileri</td></tr><tr><td><strong>IDE eklentisi</strong></td><td>Dosya ve editör bağlamında geliştirme</td><td>IDE, çalışma alanı ve eklenti ayarları</td></tr><tr><td><strong>Cloud</strong></td><td>Uzak ortamda bağımsız görevler</td><td>Repo erişimi, bağımlılıklar, sırlar ve ağ ayarları</td></tr><tr><td><strong>SDK / app-server</strong></td><td>Kendi araçlarına ajan entegre etme</td><td>Entegrasyon, yaşam döngüsü ve izin tasarımı</td></tr></tbody></table></div>
+            <p class="source-line">Resmî okuma: <a href="https://learn.chatgpt.com/docs/codex/cli" target="_blank" rel="noopener noreferrer">Codex CLI</a> · <a href="https://learn.chatgpt.com/docs/cloud" target="_blank" rel="noopener noreferrer">Codex Cloud</a> · <a href="https://developers.openai.com/blog/codex-as-a-platform" target="_blank" rel="noopener noreferrer">Codex platformu</a></p>
+          </section>
+
+          <section id="setup" class="guide-section" data-section><div class="section-number">03 / İLK ÇALIŞTIRMA</div><h2>Kurulum ve <em>ilk 10 dakika.</em></h2><p>CLI isteyenler için resmî belgede npm, Homebrew ve platforma özel kurulum seçenekleri bulunuyor. Terminalden kod çalıştırmadan önce kurulum kaynağını ve sistem gereksinimlerini doğrula.</p>
+            <div class="tab-group" data-tabs><div class="tab-list" role="tablist" aria-label="Kurulum seçenekleri"><button class="tab is-active" role="tab" aria-selected="true" data-tab="npm">npm</button><button class="tab" role="tab" aria-selected="false" data-tab="brew">Homebrew</button><button class="tab" role="tab" aria-selected="false" data-tab="check">İlk görev</button></div><div class="tab-pane" data-pane="npm"><div class="code-block"><div class="code-caption"><span>macOS / Windows / Linux · Node.js</span><button data-copy aria-label="Komutu kopyala">Kopyala ⧉</button></div><pre><code>npm install -g @openai/codex
+codex --version
+codex</code></pre></div></div><div class="tab-pane" data-pane="brew" hidden><div class="code-block"><div class="code-caption"><span>macOS · Homebrew</span><button data-copy aria-label="Komutu kopyala">Kopyala ⧉</button></div><pre><code>brew install --cask codex
+codex --version
+codex</code></pre></div></div><div class="tab-pane" data-pane="check" hidden><div class="code-block"><div class="code-caption"><span>İlk istek</span><button data-copy aria-label="Promptu kopyala">Kopyala ⧉</button></div><pre><code>Bu depoyu incele. Henüz dosya değiştirme.
+Mimariyi, çalıştırma komutlarını, test altyapısını
+ve ilk üç teknik riski özetle.
+Doğruladıklarını varsayımlarından ayır.</code></pre></div></div></div>
+            <div class="steps"><div><span>1</span><p><strong>Proje klasörünü aç.</strong> Yeni veya mevcut bir Git deposu seç.</p></div><div><span>2</span><p><strong>Oturum aç.</strong> `codex` ile kullanılabilir giriş seçeneklerini takip et.</p></div><div><span>3</span><p><strong>Önce oku.</strong> İlk istekte mimari ve Git durumunu incelet.</p></div><div><span>4</span><p><strong>Küçük görevle dene.</strong> Tek bir hata veya test üzerinde ilerle.</p></div></div>
+            <p class="source-line">Resmî kurulum: <a href="https://learn.chatgpt.com/docs/codex/cli" target="_blank" rel="noopener noreferrer">CLI başlangıç rehberi</a>.</p>
+          </section>
+
+          <section id="workflow" class="guide-section" data-section><div class="section-number">04 / YÖNTEM</div><h2>Tekrarlanabilir bir <em>iş akışı.</em></h2><p>En iyi kullanım modeli, tek bir çok uzun mesaj değil; açık kontrol noktaları olan küçük geliştirme döngüleridir.</p><div class="pipeline"><div><span>01</span><strong>KEŞFET</strong><small>Dosyalar, bağımlılıklar, mevcut davranış</small></div><div><span>02</span><strong>PLANLA</strong><small>Kapsam, risk, kabul kriteri</small></div><div><span>03</span><strong>UYGULA</strong><small>Küçük ve odaklı değişiklik</small></div><div><span>04</span><strong>DOĞRULA</strong><small>Test, build, lint, regresyon</small></div><div><span>05</span><strong>İNCELE</strong><small>Diff, review, commit veya PR</small></div></div>
+            <h3>Görevi ne zaman bölmelisin?</h3><p>Birden fazla bağımsız modülü etkiliyorsa, şema değişikliği gerektiriyorsa veya başarı koşulları belirsizse önce analiz ve plan, sonra uygulama iste. Tek satırlık, düşük riskli düzeltmeler için gereksiz uzun plan hazırlatma.</p>
+            <div class="note"><strong>Tamamlanma koşulu</strong><p>“Dosyaları düzenledim” tek başına yeterli değil. Nelerin çalıştırıldığı, testlerin sonucu ve doğrulanamayan kısımlar raporlanmalı.</p></div>
+          </section>
+
+          <section id="prompting" class="guide-section" data-section><div class="section-number">05 / GÖREV TASARIMI</div><h2>İyi prompt, <em>iyi şartname.</em></h2><p>Bir Codex görevi en azından hedefi, bağlamı, kapsamı, kabul kriterlerini ve doğrulama yöntemini anlatmalıdır. Kısa olmak iyidir; belirsiz olmak değil.</p>
+            <div class="prompt-anatomy"><div><b>H</b><span><strong>Hedef</strong><small>Ne değişecek, istenen davranış ne?</small></span></div><div><b>B</b><span><strong>Bağlam</strong><small>Repo, modül, hata çıktısı, ilgili dosya</small></span></div><div><b>S</b><span><strong>Sınırlar</strong><small>Dokunulmaması gereken dosya ve sistemler</small></span></div><div><b>K</b><span><strong>Kabul kriteri</strong><small>Başarının ölçülebilir tanımı</small></span></div><div><b>D</b><span><strong>Doğrulama</strong><small>Test, build veya ölçüm</small></span></div></div>
+            <div class="code-block"><div class="code-caption"><span>Tekrar kullanılabilir görev şablonu</span><button data-copy aria-label="Şablonu kopyala">Kopyala ⧉</button></div><pre><code>HEDEF: [İstenen davranışı açıkla]
+BAĞLAM: [Proje, dosya, semptom, örnek]
+KAPSAM: [Değiştirilebilecek alanlar]
+SINIRLAR: [Dokunulmayacak alanlar]
+KABUL: [Ölçülebilir koşullar]
+DOĞRULAMA: [Çalıştırılacak kontroller]
+
+Önce mevcut uygulamayı incele. En küçük
+bakımı kolay değişikliği yap. Sonucu ve
+kalan riskleri raporla.</code></pre></div>
+            <h3>Farkı gör</h3><div class="split-example"><div class="bad-example"><span>ZAYIF</span><p>“Kimlik doğrulamayı düzelt.”</p></div><div class="good-example"><span>GÜÇLÜ</span><p>“Oturum süresi dolduğunda kullanıcıyı güvenli giriş ekranına yönlendir; mevcut oturum akışını bozma, ilgili entegrasyon testini çalıştır.”</p></div></div>
+          </section>
+
+          <section id="context" class="guide-section" data-section><div class="section-number">06 / BAĞLAM</div><h2>Bağlamı <em>akıllıca yönet.</em></h2><p>Ajana tüm depoyu ve tüm sohbetleri sürekli aktarmak yerine görevle doğrudan ilgili dosyalar, hatalar ve kararlar sun. Kaybolmaması gereken bilgileri depoda sürümlenen belgelere taşı.</p>
+            <div class="feature-list"><div><span class="bullet-icon">↗</span><div><h3>Önce kod tabanını tarat</h3><p>“Bu işlem hangi controller, servis, test ve yapılandırmayı etkiliyor?” sorusuna cevap al.</p></div></div><div><span class="bullet-icon">↗</span><div><h3>Varsayım ile bulguyu ayır</h3><p>Dosyada görülmeyen davranışlar ve çalıştırılmamış testler kesin bilgi sayılmamalı.</p></div></div><div><span class="bullet-icon">↗</span><div><h3>Kalıcı kararları belgele</h3><p><code>README.md</code>, <code>docs/ARCHITECTURE.md</code>, <code>docs/DECISIONS.md</code> veya proje kuralları için <code>AGENTS.md</code> kullan.</p></div></div><div><span class="bullet-icon">↗</span><div><h3>Yeni sohbeti kanıtla başlat</h3><p>Git dalı, son commit, değişmiş dosyalar ve açık işleri yeniden kontrol ettir.</p></div></div></div>
+          </section>
+
+          <section id="agents" class="guide-section" data-section><div class="section-number">07 / YAPILANDIRMA</div><h2>AGENTS.md ile <em>oyunun kurallarını yaz.</em></h2><p>Codex oturum başında ilgili <code>AGENTS.md</code> talimatlarını okuyabilir. Genel kurallar <code>~/.codex/AGENTS.md</code> içinde; depo kuralları proje kökündeki dosyada tutulabilir. Alt dizinler için daha özel yönergeler eklenebilir.</p>
+            <div class="filetree"><div><span class="tree-dot">●</span> ~/.codex/AGENTS.md <small>kişisel genel yönergeler</small></div><div><span class="tree-dot">●</span> repository/AGENTS.md <small>repo kuralları</small></div><div><span class="tree-dot">●</span> repository/src/AGENTS.md <small>modüle özel kurallar</small></div></div>
+            <div class="code-block"><div class="code-caption"><span>Örnek AGENTS.md</span><button data-copy aria-label="AGENTS şablonunu kopyala">Kopyala ⧉</button></div><pre><code># Repository instructions
+
+## Development
+- Inspect existing conventions before editing.
+- Keep changes focused; avoid unrelated refactors.
+- Do not add dependencies without justification.
+
+## Verification
+- Run the relevant tests and checks.
+- Report what passed and what was not run.
+- Preserve unrelated local changes.
+
+## Safety
+- Never expose secrets.
+- Ask before destructive actions or deployment.</code></pre></div>
+            <p><strong>Detay:</strong> Aynı dizinde <code>AGENTS.override.md</code> varsa öncelikli okunabilir. Belgelerin toplam boyutu ve keşif davranışı yapılandırma ile sınırlanabilir. Kısa, anlaşılır ve uygulanabilir kuralları tercih et.</p><p class="source-line"><a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md" target="_blank" rel="noopener noreferrer">Resmî AGENTS.md açıklaması ↗</a></p>
+          </section>
+
+          <section id="git" class="guide-section" data-section><div class="section-number">08 / İZOLASYON</div><h2>Git, branch ve <em>Worktree.</em></h2><p>Git bir güvenlik ağıdır. Büyük bir işten önce temiz çalışma ağacı ve geri dönülebilir bir commit noktası oluştur. Bağımsız görevleri farklı branch veya worktree'lerde yürüt.</p>
+            <div class="mode-cards"><div class="mode-card"><span class="mode-label">LOCAL</span><h3>Mevcut çalışma alanı</h3><p>Küçük düzeltmeler, günlük geliştirme ve yerel hata ayıklama.</p></div><div class="mode-card accent-card"><span class="mode-label">WORKTREE</span><h3>İzole paralel alan</h3><p>Aynı Git deposundaki bağımsız işler için ayrı checkout. Birbirine karışmayan dosya değişiklikleri.</p></div><div class="mode-card"><span class="mode-label">CLOUD</span><h3>Uzak çalışma alanı</h3><p>Bulutta görev, bağımlılık ve ortam yönetimi; daha sonra diff ve PR incelemesi.</p></div></div>
+            <div class="code-block"><div class="code-caption"><span>Git sağlık kontrolü</span><button data-copy aria-label="Git komutlarını kopyala">Kopyala ⧉</button></div><pre><code>git status
+git diff --check
+git diff --stat
+git log -1 --oneline</code></pre></div>
+            <div class="note"><strong>Worktree ≠ tam ortam izolasyonu</strong><p>Farklı worktree'ler aynı veritabanına, porta veya harici servise bağlanabilir. Paralel işleri ayrı geliştirme verisi ve uygun portlarla çalıştır.</p></div>
+            <p class="source-line"><a href="https://learn.chatgpt.com/docs/environments/git-worktrees" target="_blank" rel="noopener noreferrer">Worktrees belgesi ↗</a></p>
+          </section>
+
+          <section id="verification" class="guide-section" data-section><div class="section-number">09 / KALİTE</div><h2>“Yapıldı” değil, <em>“doğrulandı.”</em></h2><p>Codex'e yalnızca kod değişikliğini değil, ilgili doğrulamaları da görev olarak ver. Hedef, bütün projeyi rastgele test etmek değil, etkilenmiş davranışları güvenilir biçimde kontrol etmek.</p>
+            <div class="qa-grid"><div><span>01</span><h3>Statik kontroller</h3><p>Format, lint, type-check, derleme</p></div><div><span>02</span><h3>Otomatik test</h3><p>Birim, entegrasyon, uçtan uca</p></div><div><span>03</span><h3>Regresyon</h3><p>Önceden çalışan senaryolar</p></div><div><span>04</span><h3>Review</h3><p>Diff, güvenlik, doğruluk, eksik test</p></div></div>
+            <div class="code-block"><div class="code-caption"><span>Test ve review isteği</span><button data-copy aria-label="Test promptunu kopyala">Kopyala ⧉</button></div><pre><code>Değişen dosyaları ve etkiledikleri kullanıcı
+senaryolarını belirle. İlgili build, lint ve
+test komutlarını çalıştır. Hata varsa kök
+nedeni incele. Sonunda şu tabloyu ver:
+- Kontrol / komut
+- Sonuç (geçti, kaldı, çalıştırılamadı)
+- Kanıt / çıktı özeti
+- Kalan risk</code></pre></div>
+            <p>CLI'de <code>/review</code> gibi inceleme akışlarını; GitHub üzerinden ise PR temelli code review'u kullanabilirsin. Otomatik bulguları da insan incelemesinden geçir.</p><p class="source-line"><a href="https://learn.chatgpt.com/docs/code-review" target="_blank" rel="noopener noreferrer">Code review belgeleri ↗</a></p>
+          </section>
+
+          <section id="security" class="guide-section" data-section><div class="section-number">10 / GÜVENLİK</div><h2>Önce sınırlar. <em>Sonra otomasyon.</em></h2><p>Codex güvenliği iki temel mekanizmaya dayanır: <strong>sandbox</strong> teknik olarak nerelere erişilebildiğini; <strong>approval policy</strong> ise hangi adımlarda onay isteneceğini belirler. Varsayılanlar kullandığın yüzeye ve yapılandırmaya bağlıdır.</p>
+            <div class="security-banner"><span class="shield">✳</span><div><h3>En az yetki ilkesi</h3><p>Gereksiz ağ, dosya ve yönetici yetkileri verme. Üretim servislerinde yazma/silme işlemleri için açık kontrol noktaları kullan.</p></div></div>
+            <div class="code-block"><div class="code-caption"><span>CLI · Salt okunur inceleme</span><button data-copy aria-label="CLI komutunu kopyala">Kopyala ⧉</button></div><pre><code>codex --sandbox read-only --ask-for-approval on-request</code></pre></div>
+            <div class="feature-list compact"><div><span class="bullet-icon">!</span><div><h3>Sırlar ve kişisel veri</h3><p><code>.env</code>, token, API anahtarı ve gerçek müşteri verilerini gereksiz yere paylaşma.</p></div></div><div><span class="bullet-icon">!</span><div><h3>Yıkıcı işlemler</h3><p>Migration, toplu silme, dosya temizliği, force push ve dağıtım öncesi diff/komut incelemesi yap.</p></div></div><div><span class="bullet-icon">!</span><div><h3>Harici içerik</h3><p>Depo dosyaları ve web sayfaları güvenilmeyen talimatlar içerebilir; bunları kullanıcı komutu sayma.</p></div></div></div>
+            <p class="source-line"><a href="https://learn.chatgpt.com/docs/agent-approvals-security" target="_blank" rel="noopener noreferrer">İzinler ve sandbox belgesi ↗</a></p>
+          </section>
+
+          <section id="skills" class="guide-section" data-section><div class="section-number">11 / GENİŞLETME</div><h2>Skills, MCP ve <em>alt ajanlar.</em></h2><p>Tekrarlanabilir iş akışlarını tek bir dev <code>AGENTS.md</code> dosyasına yığma. Tekrar eden uzman görevlerini Skills ile paketle; harici sistem ve veri erişimini uygun MCP/Plugin entegrasyonlarıyla tanımla.</p>
+            <div class="stack-grid"><article><span class="stack-tag">SKILLS</span><h3>İş akışı paketleri</h3><p><code>SKILL.md</code> içinde kullanım tetikleyicisi, adımlar ve gerekirse referans/komutlar bulunur.</p><code>.agents/skills/</code></article><article><span class="stack-tag">MCP / PLUGINS</span><h3>Dış araç bağlantıları</h3><p>Kaynaklar, servisler ve çalışma sistemleriyle kontrollü etkileşim sağlar. Yetkileri ayrıca değerlendir.</p><code>codex mcp</code></article><article><span class="stack-tag">SUBAGENTS</span><h3>Bağımsız uzman analizleri</h3><p>Güvenlik, performans ve test araştırmalarını ayrı alt ajanlara dağıt; sonuçları ana görevde birleştir.</p><code>alt görevlere ayır</code></article></div>
+            <div class="code-block"><div class="code-caption"><span>Minimal SKILL.md örneği</span><button data-copy aria-label="Skill örneğini kopyala">Kopyala ⧉</button></div><pre><code>---
+name: regression-audit
+description: Use when a code change needs targeted
+  regression review and verification.
+---
+
+1. Inspect changed files and dependent call sites.
+2. Identify behavior that may have regressed.
+3. Run the smallest meaningful verification set.
+4. Report findings with file references.</code></pre></div>
+            <p class="source-line"><a href="https://learn.chatgpt.com/docs/build-skills" target="_blank" rel="noopener noreferrer">Skills belgeleri</a> · <a href="https://learn.chatgpt.com/docs/extend/mcp" target="_blank" rel="noopener noreferrer">MCP belgeleri</a></p>
+          </section>
+
+          <section id="automation" class="guide-section" data-section><div class="section-number">12 / OTOMASYON</div><h2>Tekrarlanan işleri <em>akışa dönüştür.</em></h2><p><code>codex exec</code>, CLI içinden etkileşimsiz görev yürütmek için kullanılabilir. CI ve scriptlerde yalnızca gerekli izinleri aç; çıktıların mutlaka doğrulama ve insan denetimi katmanı olsun.</p>
+            <div class="code-block"><div class="code-caption"><span>Raporlama amaçlı, salt okunur görev</span><button data-copy aria-label="Komutu kopyala">Kopyala ⧉</button></div><pre><code>codex exec "Summarize the repository architecture and top 5 risks"
+
+# JSONL olay çıktısı
+codex exec --json "Summarize the test setup"</code></pre></div>
+            <p>Zamanlanmış görevler uygun ChatGPT masaüstü/web yüzeylerinde yönetilebilir. Yerel dosyalara ihtiyaç duyan masaüstü görevlerinde bilgisayarın ve uygulamanın çalışır olması gerekir; Cloud görevlerinin ise kendi erişimleri ve ortamı vardır.</p>
+            <div class="note"><strong>Otomasyonun güvenli ilk adımı</strong><p>Önce yalnızca rapor üreten, dosya değiştirmeyen bir iş akışı tasarla. Ardından testli ve geri alınabilir küçük değişikliklerle genişlet.</p></div>
+            <p class="source-line"><a href="https://learn.chatgpt.com/docs/non-interactive-mode" target="_blank" rel="noopener noreferrer">codex exec</a> · <a href="https://learn.chatgpt.com/docs/automations" target="_blank" rel="noopener noreferrer">Zamanlanmış görevler</a></p>
+          </section>
+
+          <section id="performance" class="guide-section" data-section><div class="section-number">13 / VERİMLİLİK</div><h2>Daha güçlü model değil; <em>daha iyi süreç.</em></h2><p>Model ve akıl yürütme seçimini görevin karmaşıklığına göre yap. Her uzun görev en yüksek seviyeyi gerektirmez. Farklı hesap, plan veya platformlarda seçenekler değişebilir.</p>
+            <div class="comparison-table" role="region" tabindex="0"><table><thead><tr><th>İşin karakteri</th><th>Yaklaşım</th></tr></thead><tbody><tr><td>Basit, lokal, geri alınabilir düzenleme</td><td>Hızlı / orta düzey çaba</td></tr><tr><td>Birden fazla dosya ve test bağımlılığı</td><td>Orta / yüksek çaba</td></tr><tr><td>Belirsiz hata veya mimari risk</td><td>Yüksek çaba + daha fazla kanıt</td></tr><tr><td>Ölçülebilir ve uzun iteratif hedef</td><td>Destekleniyorsa <code>/goal</code> + açık bitiş kriteri</td></tr></tbody></table></div>
+            <h3>Kullanımı gerçekten ne düşürür?</h3><p>İlgisiz dosyaları inceletmemek, başarısız denemeleri tekrar tekrar baştan başlatmamak, görevleri mantıklı parçalara bölmek, önden kabul kriterleri yazmak ve test çıktısı istemek. Fiyat ve kotalar değişebileceğinden güncel plan bilgisini hesabından kontrol et.</p><div class="code-block"><div class="code-caption"><span>Ölçülebilir hedef · Destekleyen sürümlerde</span><button data-copy aria-label="Goal örneğini kopyala">Kopyala ⧉</button></div><pre><code>/goal Reduce median report generation time by 25%,
+verified by the same benchmark, without changing
+output correctness. Stop and report if blocked.</code></pre></div><p class="source-line"><a href="https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex" target="_blank" rel="noopener noreferrer">Goals kullanım rehberi ↗</a></p>
+          </section>
+
+          <section id="patterns" class="guide-section" data-section><div class="section-number">14 / UYGULAMA LABORATUVARI</div><h2>Hazır <em>prompt atölyesi.</em></h2><p>Bir görev türü seç; aşağıdaki örnek prompt değişsin. İstersen kendi proje bağlamını ekle, sonra kopyala.</p>
+            <div class="prompt-lab"><div class="lab-head"><div><span class="lab-kicker">INTERACTIVE PROMPT LAB</span><h3>Görev şablonu oluşturucu</h3></div><span class="lab-badge">06 SENARYO</span></div><div class="lab-fields"><label for="lab-type">Görev türü<select id="lab-type"><option value="debug">Hata ayıklama</option><option value="feature">Yeni özellik</option><option value="refactor">Refactoring</option><option value="review">Güvenlik / code review</option><option value="tests">Test kapsamı</option><option value="release">Yayın öncesi kontrol</option></select></label><label for="lab-context">Bağlam (isteğe bağlı)<input id="lab-context" type="text" placeholder="Örn: ödeme modülü, checkout akışı"></label></div><div class="lab-output" id="lab-output" role="region" aria-label="Oluşturulmuş prompt"></div><div class="lab-footer"><span>Proje, veri ve yetki sınırlarına göre uyarlayın.</span><button id="lab-copy" class="button button-lime">Promptu kopyala ⧉</button></div></div>
+          </section>
+
+          <section id="pitfalls" class="guide-section" data-section><div class="section-number">15 / SORUN GİDERME</div><h2>En yaygın <em>tuzaklar.</em></h2><div class="accordion-set">
+            <details><summary>“Çalıştı” dedi ama test edilmedi. <span>+</span></summary><p>Doğrulama komutunu ve çıktısını iste. Test yoksa bunu açıkça belirtmesini, gerekirse uygun test önermesini söyle. Çalıştırılmadı ile geçti aynı şey değildir.</p></details>
+            <details><summary>Beklenenden fazla dosyayı değiştirdi. <span>+</span></summary><p>Önce <code>git diff --stat</code> ve <code>git diff</code> incele. Görev kapsamını dosya/modül olarak daralt; ilgili olmayan değişiklikleri otomatik ve körlemesine geri alma.</p></details>
+            <details><summary>Uzun sohbette önceki kararlar karıştı. <span>+</span></summary><p>Kararları sürümlenen bir belgeye taşı, yeni sohbette kod ve Git durumunu yeniden doğrulat. Geçmiş sohbeti tek hakikat kaynağı kabul etme.</p></details>
+            <details><summary>Worktree farklı davranıyor. <span>+</span></summary><p>Bağımlılık sürümü, ortam değişkenleri, portlar, yerel servisler ve <code>.gitignore</code> ile dışlanan dosyaları karşılaştır.</p></details>
+            <details><summary>Komutlar izin istiyor veya erişim engelleniyor. <span>+</span></summary><p>Sandbox ve approval politikasını, çalışma dizinini ve erişim sınırlarını kontrol et. Gerekmedikçe tüm izinleri açma; tek görev için gereken en az yetkiyi tanımla.</p></details>
+            <details><summary>Sonuç yavaş veya gereksiz pahalı. <span>+</span></summary><p>Belirsiz işi parçalara ayır, hedef dosyaları belirt, gereksiz büyük raporları azalt, tekrar eden yönergeleri AGENTS.md / Skill'e taşı ve uygun model çabasını seç.</p></details>
+          </div></section>
+
+          <section id="checklist" class="guide-section" data-section><div class="section-number">16 / SON KONTROL</div><h2>Her görev öncesi <em>ve sonrası.</em></h2><p>Bu kontrol listesi tarayıcında saklanır; sunucuya veri göndermez. Tüm maddeleri işaretlemek amaç değil; her biri için gerçek kanıt elde etmek amaçtır.</p><div class="checklist-head"><strong>Görev hazırlık ve teslim kontrolü</strong><span id="check-percent">0%</span></div><div class="check-progress"><div id="check-progress-fill"></div></div><div class="checklist" id="checklist-items"><label><input type="checkbox" data-check="0"><span>Hedef ve kabul kriterleri net</span></label><label><input type="checkbox" data-check="1"><span>Projenin ve Git'in mevcut durumu incelendi</span></label><label><input type="checkbox" data-check="2"><span>Dosya, ağ ve veri erişim sınırları belirlendi</span></label><label><input type="checkbox" data-check="3"><span>Değişiklikler odaklı ve geri alınabilir</span></label><label><input type="checkbox" data-check="4"><span>İlgili build, lint veya testler çalıştırıldı</span></label><label><input type="checkbox" data-check="5"><span>Diff ve kritik riskler gözden geçirildi</span></label><label><input type="checkbox" data-check="6"><span>Başarısız/çalıştırılamayan kontroller raporlandı</span></label><label><input type="checkbox" data-check="7"><span>Commit, PR veya teslim notu hazır</span></label></div><div class="checklist-footer"><span id="check-count">0 / 8 tamamlandı</span><button id="reset-checklist" type="button">Listeyi sıfırla ↻</button></div></section>
+
+          <section id="references" class="references-section"><div class="section-number">KAYNAKLAR / EKLER</div><h2>Kaynaklar ve <em>güncellik.</em></h2><p>Bu site bağımsız bir eğitim kaynağıdır; OpenAI tarafından resmen yayımlanmış bir ürün arayüzü değildir. Örnekler 22 Kasım 2026 itibarıyla resmî belgelerle karşılaştırılarak hazırlanmıştır. Özellikler, yetkiler ve komutlar sürümler arasında değişebilir.</p><div class="refs-grid"><a href="https://learn.chatgpt.com/docs/codex/cli" target="_blank" rel="noopener noreferrer">Codex CLI <span>↗</span></a><a href="https://learn.chatgpt.com/docs/cloud" target="_blank" rel="noopener noreferrer">Codex Cloud <span>↗</span></a><a href="https://learn.chatgpt.com/docs/environments/git-worktrees" target="_blank" rel="noopener noreferrer">Worktrees <span>↗</span></a><a href="https://learn.chatgpt.com/docs/agent-configuration/agents-md" target="_blank" rel="noopener noreferrer">AGENTS.md <span>↗</span></a><a href="https://learn.chatgpt.com/docs/build-skills" target="_blank" rel="noopener noreferrer">Skills <span>↗</span></a><a href="https://learn.chatgpt.com/docs/code-review" target="_blank" rel="noopener noreferrer">Code review <span>↗</span></a><a href="https://learn.chatgpt.com/docs/agent-approvals-security" target="_blank" rel="noopener noreferrer">Agent security <span>↗</span></a><a href="https://learn.chatgpt.com/docs/non-interactive-mode" target="_blank" rel="noopener noreferrer">Non-interactive mode <span>↗</span></a><a href="https://learn.chatgpt.com/docs/automations" target="_blank" rel="noopener noreferrer">Scheduled tasks <span>↗</span></a><a href="https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex" target="_blank" rel="noopener noreferrer">Goals in Codex <span>↗</span></a></div></section>
+        </div>
+        <footer class="site-footer"><div class="footer-logo">CODEX<span>✳</span> / FIELD GUIDE</div><div>Uygulamalı, bağımsız ve açık kaynaklı rehber.</div><div>HTML · CSS · JavaScript <span>© 2026</span></div></footer>
+      </main>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div class="mobile-scrim" id="mobile-scrim" hidden></div>
+<script>
+/* Codex Field Guide: interactions without libraries or network calls. */
+(() => {
+  'use strict';
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const store = {
+    get(key, fallback) { try { const value = localStorage.getItem(key); return value === null ? fallback : JSON.parse(value); } catch { return fallback; } },
+    set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* file:// or private browsing may block storage */ } }
+  };
+  const toastElement = $('#toast');
+  let toastTimeout;
+  function toast(message) {
+    if (!toastElement) return;
+    toastElement.textContent = message;
+    toastElement.classList.add('visible');
+    window.clearTimeout(toastTimeout);
+    toastTimeout = window.setTimeout(() => toastElement.classList.remove('visible'), 2200);
+  }
+
+  // Theme: follow device unless explicitly overridden.
+  const html = document.documentElement;
+  const savedTheme = store.get('codex-guide-theme', null);
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  function setTheme(theme, persist = false) {
+    html.setAttribute('data-theme', theme);
+    $('#theme-icon').textContent = theme === 'dark' ? '☀' : '◐';
+    $('#theme-toggle').setAttribute('aria-label', theme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç');
+    if (persist) store.set('codex-guide-theme', theme);
+  }
+  setTheme(savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : (prefersDark ? 'dark' : 'light'));
+  $('#theme-toggle').addEventListener('click', () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true));
+
+  // Mobile menu: focusable, dismiss on escape, scrim or navigation.
+  const menuButton = $('#menu-toggle');
+  const scrim = $('#mobile-scrim');
+  function setMenu(open) {
+    document.body.classList.toggle('menu-open', open);
+    menuButton.setAttribute('aria-expanded', String(open));
+    menuButton.setAttribute('aria-label', open ? 'Menüyü kapat' : 'Menüyü aç');
+    scrim.hidden = !open;
+    if (!open && document.activeElement && $('#sidebar').contains(document.activeElement)) menuButton.focus();
+  }
+  menuButton.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+  scrim.addEventListener('click', () => setMenu(false));
+  $$('[data-nav]').forEach(link => link.addEventListener('click', () => setMenu(false)));
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.body.classList.contains('menu-open')) setMenu(false);
+  });
+
+  // Search checks visible section content, not just section headings.
+  const search = $('#site-search');
+  const sections = $$('[data-section]');
+  const links = $$('[data-nav]');
+  const noResults = $('#no-results');
+  function normalize(value) {
+    return value.toLocaleLowerCase('tr-TR').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+  }
+  const searchable = sections.map(section => ({ section, content: normalize(section.textContent) }));
+  function filterSections() {
+    const needle = normalize(search.value.trim());
+    let found = 0;
+    document.body.classList.toggle('search-mode', Boolean(needle));
+    searchable.forEach(({ section, content }) => {
+      const matched = !needle || content.includes(needle);
+      section.hidden = !matched;
+      if (matched) found += 1;
+      const nav = links.find(a => a.getAttribute('href') === `#${section.id}`);
+      if (nav) nav.hidden = !matched;
+    });
+    noResults.hidden = !needle || found > 0;
+  }
+  search.addEventListener('input', filterSections);
+  $('#clear-search').addEventListener('click', () => { search.value = ''; filterSections(); search.focus(); });
+  window.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+    if ((e.key === '/' && !typing) || ((e.key.toLowerCase() === 'k') && (e.metaKey || e.ctrlKey))) {
+      e.preventDefault(); search.focus(); search.select();
+    }
+    if (e.key === 'Escape' && document.activeElement === search) { search.value = ''; filterSections(); search.blur(); }
+  });
+  // When navigating to a filtered-out section, restore all chapters.
+  window.addEventListener('hashchange', () => {
+    const target = window.location.hash.slice(1);
+    if (target && $(`#${CSS.escape(target)}`)?.hidden) { search.value = ''; filterSections(); }
+  });
+
+  // Sidebar chapter highlighting uses what is currently in the viewport.
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (!visible.length) return;
+      const id = visible[0].target.id;
+      links.forEach(link => {
+        const active = link.getAttribute('href') === `#${id}`;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-74px 0px -45% 0px', threshold: [0, 0.02, 0.25, 0.5] });
+    sections.forEach(section => observer.observe(section));
+  }
+
+  // Accessible basic tabs and code blocks.
+  $$('[data-tabs]').forEach(group => {
+    const tabs = $$('[data-tab]', group);
+    const panes = $$('[data-pane]', group);
+    tabs.forEach((tab, i) => {
+      const id = `setup-tab-${i}`;
+      const pane = panes.find(p => p.dataset.pane === tab.dataset.tab);
+      tab.id = id;
+      tab.setAttribute('aria-controls', `setup-panel-${i}`);
+      if (pane) { pane.id = `setup-panel-${i}`; pane.setAttribute('role', 'tabpanel'); pane.setAttribute('aria-labelledby', id); }
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => { const active = t === tab; t.classList.toggle('is-active', active); t.setAttribute('aria-selected', String(active)); t.tabIndex = active ? 0 : -1; });
+        panes.forEach(p => { p.hidden = p.dataset.pane !== tab.dataset.tab; });
+      });
+      tab.addEventListener('keydown', e => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        const next = (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[next].focus(); tabs[next].click();
+      });
+      tab.tabIndex = i === 0 ? 0 : -1;
+    });
+  });
+
+  async function copyText(value) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const field = document.createElement('textarea');
+        field.value = value; field.setAttribute('readonly', '');
+        field.style.position = 'fixed'; field.style.opacity = '0';
+        document.body.append(field); field.select();
+        if (!document.execCommand('copy')) throw new Error('Copy failed');
+        field.remove();
+      }
+      toast('Panoya kopyalandı ✓');
+    } catch { toast('Kopyalama engellendi. Metni seçip kopyalayın.'); }
+  }
+  $$('[data-copy]').forEach(button => button.addEventListener('click', () => {
+    const code = $('.code-block pre code', button.closest('.code-block'));
+    if (code) copyText(code.textContent.trim());
+  }));
+
+  // Prompt lab uses plain text nodes; user input is never interpreted as HTML.
+  const prompts = {
+    debug: `Hedef: Bu hatanın kök nedenini bul ve düzelt.
+Bağlam: {context}
+
+1. Hatayı yeniden üretmenin yolunu belirle.
+2. İlgili kod akışını ve mevcut testleri incele.
+3. Varsayımları somut kanıttan ayır.
+4. En küçük, geri alınabilir düzeltmeyi uygula.
+5. Regresyon testi ekle veya mevcut testi çalıştır.
+
+Çıktı: Kök neden, değişen dosyalar, test sonucu,
+çalıştırılamayan kontroller ve kalan riskler.`,
+    feature: `Hedef: Tanımlanan yeni özelliği geliştir.
+Bağlam: {context}
+
+1. Mevcut mimari ve benzer özellikleri incele.
+2. Dış davranışı ve kabul kriterlerini yaz.
+3. İlgisiz modüllere dokunmadan uygula.
+4. Negatif durumları ve yetki kontrollerini ele al.
+5. İlgili testleri, build ve lint'i çalıştır.
+
+Çıktı: Değişiklik özeti, kabul kriterlerine göre
+sonuç, kanıt ve varsa açık kararlar.`,
+    refactor: `Hedef: Bu modülü davranışını koruyarak sadeleştir.
+Bağlam: {context}
+
+1. Public API'leri ve bağımlılıkları belirle.
+2. Mevcut test kapsamını kontrol et.
+3. Gereksiz soyutlama eklemeden küçük adımlarla ilerle.
+4. Mimari ve isimlendirme kurallarına uy.
+5. Davranış eşdeğerliğini testlerle doğrula.
+
+Çıktı: Önce/sonra farkı, etkilenen dosyalar,
+testler ve davranış değişikliği olup olmadığı.`,
+    review: `Hedef: Değişiklikler için risk odaklı review yap.
+Bağlam: {context}
+
+1. Diff ve bağımlı kod yollarını oku.
+2. Doğruluk, yetkilendirme, veri sızıntısı,
+   yarış koşulları ve regresyon ihtimalini incele.
+3. Her bulguya önem derecesi, dosya/satır ve
+   somut tetiklenme koşulu ekle.
+4. Kesin bulguları ihtimallerden ayır.
+5. İlk aşamada dosya değiştirme.
+
+Çıktı: Önem sıralı bulgular, test boşlukları
+ve ek doğrulama önerileri.`,
+    tests: `Hedef: Değişen davranış için anlamlı testler ekle.
+Bağlam: {context}
+
+1. Projenin mevcut test çerçevesini kullan.
+2. Başarılı, başarısız ve sınır değerlerini kapsa.
+3. Harici servisleri güvenli biçimde izole et.
+4. Üretim kodunu test kolaylığı için keyfî değiştirme.
+5. Testleri gerçekten çalıştır ve sonuçları kaydet.
+
+Çıktı: Eklenen testler, komutlar, sonuçlar
+ve henüz kapsanmamış kritik senaryolar.`,
+    release: `Hedef: Yayına çıkmadan önce hazırlık denetimi yap.
+Bağlam: {context}
+
+1. Build, test, yapılandırma ve sürüm değişimlerini
+   incele.
+2. Gizli bilgiler, yetkilendirme ve veri taşıma
+   risklerini değerlendir.
+3. Geri dönüş ve gözlemlenebilirlik planını kontrol et.
+4. Kritik, yüksek ve düşük riskleri ayır.
+5. Deploy, push veya migration uygulama.
+
+Çıktı: Go / No-Go önerisi, kanıtlar, blokajlar
+ve yayın öncesi gerekli aksiyonlar.`
+  };
+  const labType = $('#lab-type');
+  const labContext = $('#lab-context');
+  const labOutput = $('#lab-output');
+  function updateLab() {
+    const context = labContext.value.trim() || '[Proje / modül / sorun açıklamasını buraya yaz]';
+    labOutput.textContent = prompts[labType.value].replace('{context}', context);
+  }
+  labType.addEventListener('change', updateLab);
+  labContext.addEventListener('input', updateLab);
+  $('#lab-copy').addEventListener('click', () => copyText(labOutput.textContent));
+  updateLab();
+
+  // Persistent optional checklist state.
+  const checkInputs = $$('[data-check]');
+  const stored = store.get('codex-guide-checklist', []);
+  if (Array.isArray(stored)) checkInputs.forEach(input => { input.checked = stored.includes(Number(input.dataset.check)); });
+  function updateChecklist() {
+    const checked = checkInputs.filter(input => input.checked).length;
+    const percent = Math.round((checked / checkInputs.length) * 100);
+    $('#check-count').textContent = `${checked} / ${checkInputs.length} tamamlandı`;
+    $('#check-percent').textContent = `${percent}%`;
+    $('#check-progress-fill').style.width = `${percent}%`;
+    $('#sidebar-progress').style.width = `${percent}%`;
+    $('#sidebar-progress-label').textContent = `${checked} / ${checkInputs.length} kontrol tamamlandı`;
+    store.set('codex-guide-checklist', checkInputs.filter(i => i.checked).map(i => Number(i.dataset.check)));
+  }
+  checkInputs.forEach(input => input.addEventListener('change', updateChecklist));
+  $('#reset-checklist').addEventListener('click', () => { checkInputs.forEach(input => { input.checked = false; }); updateChecklist(); toast('Kontrol listesi sıfırlandı'); });
+  updateChecklist();
+})();
+
+</script>
+</body>
+</html>

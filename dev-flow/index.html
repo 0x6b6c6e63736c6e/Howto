@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevFlow — Geliştiriciler İçin SDLC & CI/CD Süreç Rehberi</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+          keyframes: {
+            flowRight: {
+              '0%': { transform: 'translateX(-100%)' },
+              '100%': { transform: 'translateX(200%)' },
+            },
+            flowDown: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(200%)' },
+            },
+            rollbackPulse: {
+              '0%, 100%': { boxShadow: '0 0 0 0 rgba(244, 63, 94, 0.5)' },
+              '50%': { boxShadow: '0 0 0 12px rgba(244, 63, 94, 0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(6px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          },
+          animation: {
+            'flow-right': 'flowRight 1.4s linear infinite',
+            'flow-down': 'flowDown 1.4s linear infinite',
+            'rollback-pulse': 'rollbackPulse 1.5s infinite',
+            'fade-in': 'fadeIn 0.3s ease-out forwards',
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200 transition-colors duration-300 overflow-x-hidden">
+
+  <!-- Arka Plan Dekoratif Işık Efektleri -->
+  <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+    <div class="absolute -top-32 left-1/4 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-500/15 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-24 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/3 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- ==========================================
+       NAVİGASYON ÇUBUĞU (STICKY HEADER)
+  =========================================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Marka Logosu -->
+        <a href="#top" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-base tracking-tight leading-none">DevFlow</span>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">SDLC &amp; CI/CD Rehberi</span>
+          </div>
+        </a>
+
+        <!-- Masaüstü Menü Linkleri -->
+        <nav class="hidden md:flex items-center gap-1" aria-label="Ana Navigasyon">
+          <a href="#pipeline" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors">Akış Simülatörü</a>
+          <a href="#glossary" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors">Terimler Sözlüğü</a>
+          <a href="#comparison" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors">4 Temel Fark</a>
+          <a href="#quiz" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors">Mini Quiz</a>
+        </nav>
+
+        <!-- Sağ Aksiyonlar: Tema Değiştirici & Mobil Menü -->
+        <div class="flex items-center gap-2">
+          <button id="themeToggle" type="button" aria-label="Temayı değiştir" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-cyan-500/50 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all">
+            <!-- Güneş İkonu (Koyu temada görünür) -->
+            <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <!-- Ay İkonu (Açık temada görünür) -->
+            <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+
+          <!-- Mobil Menü Butonu -->
+          <button id="mobileMenuBtn" type="button" aria-label="Menüyü aç" class="md:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobil Açılır Menü -->
+      <div id="mobileMenu" class="hidden md:hidden pb-4 pt-2 border-t border-slate-200 dark:border-slate-800 space-y-1">
+        <a href="#pipeline" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Akış Simülatörü</a>
+        <a href="#glossary" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Terimler Sözlüğü</a>
+        <a href="#comparison" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">4 Temel Fark</a>
+        <a href="#quiz" class="mobile-nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Mini Quiz</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       HERO BÖLÜMÜ
+  =========================================== -->
+  <main id="top" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 space-y-24">
+    <section class="relative pt-4 sm:pt-8">
+      <div class="grid lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-mono font-medium">
+            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+            SDLC &amp; CI/CD Etkileşimli Geliştirici Rehberi
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white">
+            Koddan Canlıya: <br class="hidden sm:block" />
+            <span class="bg-gradient-to-r from-cyan-500 via-indigo-500 to-emerald-400 bg-clip-text text-transparent">
+              Deploy, Publish &amp; Release
+            </span>
+            Süreçlerini Netleştirin
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+            Yazılım geliştirme yaşam döngüsünde (<strong class="text-slate-800 dark:text-slate-200">SDLC</strong>) en sık kullanılan ama birbirine karıştırılan 10 kritik terimi; etkileşimli pipeline simülatörü, gerçek terminal örnekleri ve senaryo testleriyle tek sayfada öğrenin.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <a href="#pipeline" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-cyan-500/25 hover:brightness-110 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Simülatörü Başlat
+            </a>
+            <a href="#glossary" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:border-cyan-500/50 transition-all">
+              Sözlüğü İncele
+            </a>
+            <a href="#quiz" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-800 transition-all">
+              Mini Quize Geç
+            </a>
+          </div>
+        </div>
+
+        <!-- Sağ IDE Esintili Mini Özet Kartı -->
+        <div class="lg:col-span-5">
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden text-slate-200">
+            <div class="flex items-center justify-between px-4 py-3 bg-slate-950/80 border-b border-slate-800">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-400/80"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+              </div>
+              <span class="text-xs font-mono text-slate-400">pipeline.yml — main</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">PASSED</span>
+            </div>
+            <div class="p-5 font-mono text-xs sm:text-sm space-y-2.5 leading-relaxed">
+              <div class="flex items-center gap-2 text-slate-400">
+                <span class="text-cyan-400">$</span>
+                <span>git commit -m "feat: yeni ödeme akışı" &amp;&amp; git push</span>
+              </div>
+              <div class="pl-3 border-l-2 border-slate-800 space-y-1.5 text-slate-300">
+                <p><span class="text-emerald-400">✓</span> <span class="text-indigo-400">Build</span> tamamlandı <span class="text-slate-500">→ dist/app.bundle.js</span></p>
+                <p><span class="text-emerald-400">✓</span> <span class="text-cyan-400">Test (CI)</span> 142/142 birim testi geçti</p>
+                <p><span class="text-emerald-400">✓</span> <span class="text-amber-400">Publish</span> docker.io/app:v2.1.0 yüklendi</p>
+                <p><span class="text-emerald-400">✓</span> <span class="text-purple-400">Deploy</span> prod-cluster üzerine kuruldu</p>
+                <p><span class="text-emerald-400">★</span> <span class="text-emerald-300">Release</span> Feature Flag açıldı (100% trafik)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         BÖLÜM 1: ETKİLEŞİMLİ CI/CD PİPELİNE SİMÜLATÖRÜ
+    =========================================== -->
+    <section id="pipeline" class="scroll-mt-24 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div class="space-y-2">
+          <span class="text-xs font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-400 font-semibold">01 / Etkileşimli Simülasyon</span>
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">CI/CD Süreç Akışı (Pipeline Simülatörü)</h2>
+          <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl">
+            Bir aşamaya tıklayın veya kontrol butonlarıyla kodu canlıya kadar taşıyın. Hata senaryosunu görmek için <strong class="text-rose-500">Rollback</strong> tetikleyebilirsiniz.
+          </p>
+        </div>
+
+        <!-- Kontrol Butonları -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="prevStepBtn" type="button" class="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-medium hover:border-cyan-500/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            ← Önceki
+          </button>
+          <button id="nextStepBtn" type="button" class="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-medium hover:border-cyan-500/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            Sonraki →
+          </button>
+          <button id="playPauseBtn" type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-cyan-500/20 transition-all">
+            <span id="playIcon">▶</span>
+            <span id="playText">Akışı Oynat</span>
+          </button>
+          <button id="rollbackBtn" type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs sm:text-sm font-semibold transition-all">
+            <span>↺</span>
+            <span>Hata Senaryosu: Rollback Tetikle</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pipeline Görsel Akış Alanı -->
+      <div id="pipelineContainer" class="rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-7 shadow-xl space-y-6 transition-all duration-300">
+        <!-- Rollback Uyarı Şeridi (Sadece Rollback aktifken görünür) -->
+        <div id="rollbackBanner" class="hidden rounded-xl bg-rose-500/15 border border-rose-500/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+          <div class="flex items-start sm:items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-rose-500 text-white flex items-center justify-center shrink-0 animate-rollback-pulse">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-rose-600 dark:text-rose-300">ROLLBACK TETİKLENDİ: v2.1.0 → v2.0.4</h3>
+              <p class="text-xs text-rose-700/90 dark:text-rose-200/80">Canlı ortamda (Release) kritik hata tespit edildi. Trafik anında önceki kararlı Deploy sürümüne geri döndürüldü.</p>
+            </div>
+          </div>
+          <button id="exitRollbackBtn" type="button" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shrink-0 transition-colors">
+            Normal Akışa Dön
+          </button>
+        </div>
+
+        <!-- 6 Adımlı Düğüm Zinciri (JS ile render edilir) -->
+        <div id="pipelineNodes" class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 lg:gap-0">
+          <!-- JS tarafından doldurulacak -->
+        </div>
+
+        <!-- Seçili Aşama Detay Paneli -->
+        <div id="stageDetailPanel" class="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 transition-all">
+          <div class="grid lg:grid-cols-12 gap-6 items-start">
+            <!-- Sol: Rol, Görevler ve Çıktı -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <span id="detailBadge" class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">ADIM 1 / 6</span>
+                <h3 id="detailTitle" class="text-xl font-bold text-slate-900 dark:text-white">1. Commit &amp; Push</h3>
+              </div>
+
+              <p id="detailRole" class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                Geliştirici yerel ortamda yaptığı kod değişikliklerini Git geçmişine kaydeder ve uzak sunucuya göndererek CI hattını tetikler.
+              </p>
+
+              <div class="space-y-2">
+                <h4 class="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Bu Aşamada Yapılan Görevler</h4>
+                <ul id="detailTasks" class="grid sm:grid-cols-2 gap-2 text-sm text-slate-700 dark:text-slate-300">
+                  <!-- JS ile doldurulacak -->
+                </ul>
+              </div>
+
+              <div class="pt-2 flex flex-wrap items-center gap-2">
+                <span class="text-xs font-mono uppercase text-slate-500 dark:text-slate-400">Üretilen Çıktı (Output):</span>
+                <span id="detailOutput" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-mono font-medium">
+                  Kaynak Kod Değişikliği
+                </span>
+              </div>
+            </div>
+
+            <!-- Sağ: Terminal / Kod Örneği -->
+            <div class="lg:col-span-5">
+              <div class="rounded-xl bg-slate-900 border border-slate-800 overflow-hidden shadow-lg">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-slate-950 border-b border-slate-800">
+                  <span id="detailTerminalLabel" class="text-xs font-mono text-slate-400">terminal — bash</span>
+                  <button id="copyCodeBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Kopyala
+                  </button>
+                </div>
+                <pre id="detailCode" class="p-4 text-xs sm:text-sm font-mono text-cyan-300 overflow-x-auto leading-relaxed whitespace-pre-wrap"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         BÖLÜM 2: TEMEL TERİMLER SÖZLÜĞÜ
+    =========================================== -->
+    <section id="glossary" class="scroll-mt-24 space-y-6">
+      <div class="space-y-2">
+        <span class="text-xs font-mono uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-semibold">02 / Referans Kılavuzu</span>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Geliştiriciler İçin Temel Terimler Sözlüğü</h2>
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl">
+          En sık kullanılan 10 SDLC &amp; DevOps terimini kategoriye göre filtreleyin, anlık arayın veya Tablo / Kart görünümü arasında geçiş yapın.
+        </p>
+      </div>
+
+      <!-- Arama, Kategori Filtreleri ve Görünüm Anahtarı -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800">
+        <!-- Arama Kutusu -->
+        <div class="relative flex-1 max-w-md">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input id="glossarySearch" type="text" placeholder="Terim, açıklama veya komut ara (ör. docker, hotfix)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all" />
+        </div>
+
+        <!-- Kategori Filtre Butonları -->
+        <div id="categoryFilters" class="flex flex-wrap items-center gap-1.5">
+          <button data-category="Tümü" type="button" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all bg-cyan-600 text-white shadow-sm">Tümü (10)</button>
+          <button data-category="Kod & Derleme" type="button" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">Kod &amp; Derleme</button>
+          <button data-category="Dağıtım & Yayın" type="button" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">Dağıtım &amp; Yayın</button>
+          <button data-category="Ortam & Kurtarma" type="button" class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">Ortam &amp; Kurtarma</button>
+        </div>
+
+        <!-- Tablo / Kart Görünümü Geçişi -->
+        <div class="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 self-start lg:self-auto">
+          <button id="tableViewBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Tablo
+          </button>
+          <button id="cardViewBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Kart
+          </button>
+        </div>
+      </div>
+
+      <!-- Sözlük İçerik Konteyneri (Tablo veya Kart) -->
+      <div id="glossaryOutput">
+        <!-- JS tarafından doldurulacak -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         BÖLÜM 3: EN ÇOK KARIŞTIRILAN 4 TERİM
+    =========================================== -->
+    <section id="comparison" class="scroll-mt-24 space-y-6">
+      <div class="space-y-2">
+        <span class="text-xs font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">03 / Kritik Ayrım</span>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">En Çok Karıştırılan 4 Terim</h2>
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl">
+          Günlük ekip konuşmalarında sıkça birbirinin yerine kullanılan <strong>Build, Publish, Deploy ve Release</strong> kavramlarının kesin sınırları:
+        </p>
+      </div>
+
+      <!-- 4 Sütunlu Karşılaştırma Kartları -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Build -->
+        <article class="group rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-6 hover:border-cyan-500/50 transition-all shadow-lg flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-mono font-bold text-lg">01</div>
+              <span class="text-[11px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-300">DERLEME</span>
+            </div>
+            <h3 class="text-xl font-bold">Build</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              Kodu <strong>çalışır hale</strong> getirir (derler). Kaynak kodları makinenin veya tarayıcının anlayacağı optimize paketlere dönüştürür.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+            Örn: <span class="text-cyan-600 dark:text-cyan-400">npm run build</span>
+          </div>
+        </article>
+
+        <!-- Publish -->
+        <article class="group rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-6 hover:border-amber-500/50 transition-all shadow-lg flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-mono font-bold text-lg">02</div>
+              <span class="text-[11px] font-mono px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300">YAYINLAMA</span>
+            </div>
+            <h3 class="text-xl font-bold">Publish</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              Derlenmiş çıktıyı <strong>dağıtılabilir bir yere</strong> (paket deposu, klasör, mağaza) koyar. Henüz sunucuda çalışmaz, erişime hazırdır.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+            Örn: <span class="text-amber-600 dark:text-amber-400">npm publish / docker push</span>
+          </div>
+        </article>
+
+        <!-- Deploy -->
+        <article class="group rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-6 hover:border-indigo-500/50 transition-all shadow-lg flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-11 h-11 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-mono font-bold text-lg">03</div>
+              <span class="text-[11px] font-mono px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">KURULUM</span>
+            </div>
+            <h3 class="text-xl font-bold">Deploy</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              Çıktıyı <strong>sunucuya kurar ve çalıştırır</strong>. Uygulama artık hedef ortamda (Staging veya Production) fiziksel olarak ayaktadır.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+            Örn: <span class="text-indigo-600 dark:text-indigo-400">kubectl apply -f deploy.yml</span>
+          </div>
+        </article>
+
+        <!-- Release -->
+        <article class="group rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-6 hover:border-emerald-500/50 transition-all shadow-lg flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-mono font-bold text-lg">04</div>
+              <span class="text-[11px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">KULLANIMA AÇMA</span>
+            </div>
+            <h3 class="text-xl font-bold">Release</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              Çalışan yeni sürümü <strong>kullanıcılara açar</strong>. Teknik kurulumdan bağımsız olarak ürünün iş kararıyla son kullanıcıya sunulmasıdır.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+            Örn: <span class="text-emerald-600 dark:text-emerald-400">featureFlag.enable("v2")</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Önemli Not Bilgi Kutusu (Callout) -->
+      <div class="rounded-2xl bg-gradient-to-r from-indigo-500/10 via-cyan-500/10 to-emerald-500/10 border border-cyan-500/30 p-5 sm:p-6 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Önemli Not: Her Deploy bir Release değildir!</h3>
+          <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            Bir kodu gece yarısı canlı sunucuya <strong>deploy</strong> edip, özelliği gizli tutarak (<strong>Feature Flag</strong> ile) ertesi sabah kullanıcılara <strong>Release</strong> edebilirsiniz. Böylece teknik kurulum riskini ürün lansmanından ayırmış olursunuz.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         BÖLÜM 4: KENDİNİ TEST ET (MİNİ SENARYO QUİZİ)
+    =========================================== -->
+    <section id="quiz" class="scroll-mt-24 space-y-6">
+      <div class="space-y-2">
+        <span class="text-xs font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-semibold">04 / Pratik Değerlendirme</span>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Kendini Test Et: Mini Senaryo Quizi</h2>
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl">
+          5 gerçek hayat geliştirici senaryosunda doğru kavramı seçin ve öğrendiklerinizi pekiştirin.
+        </p>
+      </div>
+
+      <!-- Quiz Kartı -->
+      <div class="rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl max-w-3xl mx-auto">
+        <!-- İlerleme Çubuğu ve Skor -->
+        <div id="quizHeader" class="flex items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-2">
+            <span id="quizProgressBadge" class="px-3 py-1 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-300 font-mono text-xs font-semibold">Soru 1 / 5</span>
+            <span id="quizScoreLive" class="text-xs font-mono text-slate-500 dark:text-slate-400">Skor: 0</span>
+          </div>
+          <div class="flex-1 max-w-[200px] h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+            <div id="quizProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-300" style="width: 20%"></div>
+          </div>
+        </div>
+
+        <!-- Soru İçeriği -->
+        <div id="quizBody" class="space-y-5">
+          <h3 id="quizQuestion" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug">
+            <!-- JS ile doldurulacak -->
+          </h3>
+
+          <div id="quizOptions" class="grid gap-3">
+            <!-- JS ile doldurulacak -->
+          </div>
+
+          <!-- Anlık Geri Bildirim Kutusu -->
+          <div id="quizFeedback" class="hidden rounded-xl p-4 text-sm leading-relaxed animate-fade-in"></div>
+
+          <div class="flex justify-end pt-2">
+            <button id="nextQuestionBtn" type="button" class="hidden px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white text-sm font-semibold shadow-md hover:brightness-110 transition-all">
+              Sonraki Soru →
+            </button>
+          </div>
+        </div>
+
+        <!-- Sonuç Ekranı -->
+        <div id="quizResult" class="hidden text-center py-6 space-y-5 animate-fade-in">
+          <div id="resultIcon" class="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center text-3xl font-bold">
+            🏆
+          </div>
+          <div class="space-y-2">
+            <h3 class="text-2xl font-extrabold">Quiz Tamamlandı!</h3>
+            <p id="resultScoreText" class="text-base font-mono text-cyan-600 dark:text-cyan-400 font-semibold"></p>
+            <p id="resultMessage" class="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto"></p>
+          </div>
+          <button id="restartQuizBtn" type="button" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold hover:opacity-90 transition-all">
+            ↺ Tekrar Çöz
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================
+       ALT BİLGİ (FOOTER)
+  =========================================== -->
+  <footer class="border-t border-slate-200 dark:border-slate-800/80 py-8 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="font-mono">DevFlow — Yazılım Geliştiriciler İçin SDLC &amp; CI/CD Rehberi</p>
+      <p>Tek sayfalık etkileşimli eğitim materyali</p>
+    </div>
+  </footer>
+
+  <!-- Özel Bildirim (Toast) — alert() yerine kullanılır -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="px-4 py-3 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-xs font-mono shadow-2xl border border-slate-700 flex items-center gap-2">
+      <span class="text-emerald-400">✓</span>
+      <span id="toastMessage">Kod panoya kopyalandı!</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       JAVASCRIPT UYGULAMA MANTIĞI
+  =========================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ---------------------------------------------------
+         1. VERİ KAYNAKLARI (PİPELİNE, SÖZLÜK VE QUİZ)
+      ---------------------------------------------------- */
+      const pipelineStages = [
+        {
+          id: 'commit',
+          stepNumber: 1,
+          shortLabel: 'Commit & Push',
+          title: '1. Commit & Push',
+          role: 'Geliştirici yerel ortamda yaptığı kod değişikliklerini Git geçmişine kaydeder (Commit) ve uzak sunucuya göndererek (Push) otomasyon hattını tetikler.',
+          tasks: [
+            'Yerel değişiklikleri sahneye alma (git add)',
+            'Anlamlı mesajla sürüm kaydı oluşturma',
+            'Uzak depoya (GitHub / GitLab) gönderme',
+            'Webhook ile CI hattını otomatik tetikleme'
+          ],
+          output: 'Kaynak Kod Değişikliği (Git SHA)',
+          terminalLabel: 'terminal — git',
+          code: `git add .\ngit commit -m "feat(auth): OAuth2 giriş desteği eklendi"\ngit push origin main`
+        },
+        {
+          id: 'build',
+          stepNumber: 2,
+          shortLabel: 'Build',
+          title: '2. Build (Derleme)',
+          role: 'Kaynak kod, bağımlılıklarıyla birlikte derlenir, küçültülür (minify/bundle) ve çalıştırılabilir bir paket (Artifact) haline getirilir.',
+          tasks: [
+            'Bağımlılıkları yükleme (npm ci / dotnet restore)',
+            'TypeScript / Java / C# kaynak kodunu derleme',
+            'Varlıkları (CSS/JS) optimize edip paketleme',
+            'Dağıtıma hazır Artifact veya Docker imajı üretme'
+          ],
+          output: 'Derlenmiş Artifact (.jar, dist/, Docker İmajı)',
+          terminalLabel: 'ci-runner — build',
+          code: `npm ci\nnpm run build\ndocker build -t myregistry/web-app:v2.1.0 .`
+        },
+        {
+          id: 'test',
+          stepNumber: 3,
+          shortLabel: 'Test (CI)',
+          title: '3. Test (Sürekli Entegrasyon)',
+          role: 'Yeni kodun mevcut özellikleri bozmadığından ve kalite standartlarına uyduğundan emin olmak için otomatik testler koşulur.',
+          tasks: [
+            'Birim (Unit) testlerinin çalıştırılması',
+            'Entegrasyon & API kontrat testleri',
+            'Statik kod analizi ve Linting (ESLint/Sonar)',
+            'Güvenlik açığı (Dependency Audit) taraması'
+          ],
+          output: 'Test & Kapsam Raporu (PASS / FAIL)',
+          terminalLabel: 'ci-runner — test',
+          code: `npm run lint\nnpm test -- --coverage\n# Sonuç: 142 passed, 0 failed (Coverage: 91%)`
+        },
+        {
+          id: 'publish',
+          stepNumber: 4,
+          shortLabel: 'Publish',
+          title: '4. Publish (Yayınlama)',
+          role: 'Testlerden başarıyla geçen derlenmiş çıktı, versiyon etiketiyle merkezi bir paket deposuna, imaj kayıt defterine veya uygulama mağazasına yüklenir.',
+          tasks: [
+            'Semantik versiyon etiketi (v2.1.0) basma',
+            'Docker Registry, npm veya NuGet deposuna yükleme',
+            'Sürüm notlarını (Changelog) oluşturma',
+            'İmza ve bütünlük (checksum) doğrulaması'
+          ],
+          output: 'Yayınlanmış Sürüm Paketi (Registry)',
+          terminalLabel: 'ci-runner — publish',
+          code: `docker push myregistry/web-app:v2.1.0\n# veya kütüphane ise:\nnpm publish --access public`
+        },
+        {
+          id: 'deploy',
+          stepNumber: 5,
+          shortLabel: 'Deploy (CD)',
+          title: '5. Deploy (Sürekli Dağıtım)',
+          role: 'Yayınlanan paket önce Staging (son test) ardından Production (canlı) sunucularına kurulur ve uygulama ayağa kaldırılır.',
+          tasks: [
+            'Staging ortamına otomatik kurulum',
+            'Production kümesine (Kubernetes/Cloud) dağıtım',
+            'Veritabanı şema güncellemelerini (Migration) uygulama',
+            'Sağlık kontrollerini (Health Check) doğrulama'
+          ],
+          output: 'Sunucuda Çalışan Uygulama (v2.1.0)',
+          terminalLabel: 'cd-runner — deploy',
+          code: `kubectl set image deployment/web-app \\\n  web-app=myregistry/web-app:v2.1.0\nkubectl rollout status deployment/web-app`
+        },
+        {
+          id: 'release',
+          stepNumber: 6,
+          shortLabel: 'Release',
+          title: '6. Release (Kullanıma Açma)',
+          role: 'Sunucuda çalışan yeni sürüm veya özellik, iş/ürün kararı doğrultusunda son kullanıcıların erişimine açılır ve canlı metrikler izlenir.',
+          tasks: [
+            'Feature Flag aktif edilerek özelliğin görünür kılınması',
+            'Trafiğin yeni sürüme yönlendirilmesi (Canary / %100)',
+            'Hata oranları ve performans (APM) izleme',
+            'Anomali durumunda Rollback hazırlığı'
+          ],
+          output: 'Canlı Kullanıcı Erişimi (Live)',
+          terminalLabel: 'feature-flags — release',
+          code: `flagctl enable checkout-v2 --env=production --rollout=100%\n# İzleme: HTTP 5xx = 0.00% | Ortalama Gecikme = 42ms`
+        }
+      ];
+
+      const rollbackStageData = {
+        title: 'ROLLBACK: Acil Geri Dönüş (v2.1.0 → v2.0.4)',
+        role: 'Release sonrası canlı ortamda kritik hata (yüksek 5xx oranı) tespit edildi. Sistem kesintisini önlemek için trafik anında önceki kararlı Deploy sürümüne geri alındı.',
+        tasks: [
+          'Hatalı sürümün trafiğini anında kesme',
+          'Önceki kararlı imajı (v2.0.4) tekrar devreye alma',
+          'Feature Flag acil kapatma (Kill Switch)',
+          'Olay sonrası kök neden analizi (Post-Mortem) başlatma'
+        ],
+        output: 'Kararlı Sürüm Geri Yüklendi (v2.0.4)',
+        terminalLabel: 'incident — rollback',
+        code: `kubectl rollout undo deployment/web-app\n# Revision 42 (v2.0.4) geri yüklendi.\nflagctl disable checkout-v2 --env=production`
+      };
+
+      const glossaryTerms = [
+        {
+          term: 'Commit & Push',
+          category: 'Kod & Derleme',
+          meaning: 'Kod değişikliklerini yerel Git geçmişine kaydetmek (Commit) ve uzak sunucuya göndermek (Push).',
+          usage: 'Bir özellik veya hata düzeltmesi tamamlandığında kodu ekiple paylaşmak ve CI hattını başlatmak için.',
+          example: 'git commit -m "fix: login hatası" && git push origin main'
+        },
+        {
+          term: 'Build',
+          category: 'Kod & Derleme',
+          meaning: 'Kaynak kodun derlenip çalıştırılabilir ve optimize edilmiş bir forma (binary, bundle, jar, dll) dönüştürülmesi.',
+          usage: 'Kodun sözdizimi/derleme hatası içermediğini doğrulamak ve dağıtıma hazır çıktı üretmek için.',
+          example: 'npm run build veya dotnet build'
+        },
+        {
+          term: 'Artifact',
+          category: 'Kod & Derleme',
+          meaning: 'Build işlemi sonucunda ortaya çıkan derlenmiş dosya, paket veya konteyner (Docker) imajı.',
+          usage: 'Aynı derlenmiş çıktıyı hem test hem canlı ortamda birebir tutarlı şekilde kullanmak için.',
+          example: 'app-v1.4.jar, dist.zip, myorg/api:v1.4 Docker imajı'
+        },
+        {
+          term: 'Publish',
+          category: 'Dağıtım & Yayın',
+          meaning: 'Derlenen uygulamanın veya kütüphanenin bir paket deposuna, mağazaya veya hedef klasöre yayınlanması.',
+          usage: 'Kütüphaneyi başka geliştiricilerin kullanımına sunarken veya uygulamayı dağıtım öncesi merkezi depoya koyarken.',
+          example: 'npm publish, dotnet nuget push veya App Store gönderimi'
+        },
+        {
+          term: 'Deploy',
+          category: 'Dağıtım & Yayın',
+          meaning: 'Hazırlanan uygulamanın (Artifact) bir sunucuya, bulut ortamına veya konteyner kümesine kurulup çalıştırılması.',
+          usage: 'Uygulamayı Staging (test) veya Production (canlı) ortamda fiziksel olarak ayağa kaldırmak için.',
+          example: 'Docker imajını Kubernetes, AWS ECS veya Azure App Service üzerinde başlatmak'
+        },
+        {
+          term: 'Release',
+          category: 'Dağıtım & Yayın',
+          meaning: 'Deploy edilmiş bir sürümün veya özelliğin son kullanıcıların erişimine resmi olarak açılması.',
+          usage: 'Teknik kurulumdan bağımsız olarak, ürün/pazarlama kararıyla yeni sürümü kullanıcılara sunarken.',
+          example: 'Gece deploy edilen özelliğin sabah Feature Flag açılarak tüm kullanıcılara gösterilmesi'
+        },
+        {
+          term: 'CI / CD',
+          category: 'Dağıtım & Yayın',
+          meaning: 'CI (Continuous Integration): Kodun sürekli test edilip birleştirilmesi. CD (Continuous Delivery/Deployment): Otomatik dağıtım.',
+          usage: 'Manuel hataları azaltmak, güvenilir ve hızlı sürüm çıkışı sağlamak için otomasyon hatlarında.',
+          example: 'GitHub Actions veya GitLab CI ile her push sonrası otomatik test + build + deploy'
+        },
+        {
+          term: 'Staging & Prod',
+          category: 'Ortam & Kurtarma',
+          meaning: 'Staging: Canlının birebir kopyası son test ortamı. Production (Prod): Gerçek kullanıcıların kullandığı canlı ortam.',
+          usage: 'Değişiklikleri canlıya almadan önce gerçekçi veri ve ayarlarla son kez doğrulamak için.',
+          example: 'Ödeme akışını önce staging.site.com üzerinde test edip sonra site.com ortamına almak'
+        },
+        {
+          term: 'Rollback',
+          category: 'Ortam & Kurtarma',
+          meaning: 'Canlıya alınan yeni sürümde kritik bir hata çıktığında bir önceki kararlı sürüme hızla geri dönülmesi.',
+          usage: 'Sistem kesintisini en kısa sürede gidermek için acil kurtarma adımı olarak.',
+          example: 'v2.1 sürümünde çökme yaşanınca trafiği anında v2.0 imajına geri yönlendirmek'
+        },
+        {
+          term: 'Hotfix',
+          category: 'Ortam & Kurtarma',
+          meaning: 'Canlı (Production) ortamda ortaya çıkan acil ve kritik hatayı gidermek için normal geliştirme sırasını beklemeden yapılan yama.',
+          usage: 'Kullanıcıları doğrudan etkileyen acil durumlarda (ödeme hatası, kritik güvenlik açığı vb.).',
+          example: 'main dalından hotfix/fix-payment dalı açıp hatayı düzeltip doğrudan canlıya çıkmak'
+        }
+      ];
+
+      const quizQuestions = [
+        {
+          question: 'Canlı (Production) ortamda ödeme ekranı aniden çöktü. Normal sprint sırasını beklemeden hemen bir dal açıp hatayı düzeltip canlıya çıkman gerekiyor. Bu işlem nedir?',
+          options: ['Hotfix', 'Artifact', 'Staging', 'Publish'],
+          correctIndex: 0,
+          explanation: 'Hotfix, canlı ortamda ortaya çıkan acil ve kritik hataları normal geliştirme döngüsünü beklemeden hızla gidermek için yapılan yamadır.'
+        },
+        {
+          question: 'CI hattında kaynak kodun başarıyla derlendi ve sonucunda dağıtıma hazır bir ".jar" dosyası (veya Docker imajı) oluştu. Bu çıktıya ne ad verilir?',
+          options: ['Commit', 'Artifact', 'Rollback', 'Release'],
+          correctIndex: 1,
+          explanation: 'Build işlemi sonucunda ortaya çıkan derlenmiş dosya, paket veya Docker imajına Artifact denir.'
+        },
+        {
+          question: 'Yeni özellik gece 03:00\'te canlı sunuculara kuruldu ve çalışıyor ancak Feature Flag kapalı olduğu için kullanıcılar henüz görmüyor; sabah 09:00\'da açılacak. Mevcut durum hangisidir?',
+          options: [
+            'Henüz Build edilmedi',
+            'Release edildi ama Deploy edilmedi',
+            'Deploy edildi ama henüz Release edilmedi',
+            'Rollback yapıldı'
+          ],
+          correctIndex: 2,
+          explanation: 'Her Deploy bir Release değildir. Kod sunucuya kurulup çalıştırıldığında Deploy edilmiş olur; kullanıcılara açıldığında ise Release edilir.'
+        },
+        {
+          question: 'Canlıya yeni çıkılan v2.1 sürümünde kritik bellek sızıntısı fark edildi. Kesintiyi durdurmak için trafiği saniyeler içinde önceki kararlı v2.0 sürümüne geri alıyorsun. Bu nedir?',
+          options: ['Publish', 'Rollback', 'Staging', 'Build'],
+          correctIndex: 1,
+          explanation: 'Rollback, yeni sürümde kritik bir sorun oluştuğunda sistemi hızla bir önceki kararlı sürüme geri döndürme işlemidir.'
+        },
+        {
+          question: 'Ekibinle geliştirdiğin açık kaynaklı bir UI bileşen kütüphanesini derledin ve diğer geliştiricilerin indirebilmesi için npm kayıt defterine yükledin. Bu adım hangisidir?',
+          options: ['Publish', 'Hotfix', 'Staging', 'Rollback'],
+          correctIndex: 0,
+          explanation: 'Derlenen bir kütüphaneyi veya uygulamayı merkezi bir paket deposuna (npm, NuGet, Docker Hub) ya da mağazaya yükleme işlemine Publish denir.'
+        }
+      ];
+
+      /* ---------------------------------------------------
+         2. YARDIMCI FONKSİYONLAR (TOAST & KOPYALAMA)
+      ---------------------------------------------------- */
+      let toastTimeout = null;
+      function showToast(message) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMessage');
+        if (!toast || !toastMsg) return;
+        toastMsg.textContent = message;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 2200);
+      }
+
+      // iFrame kısıtlamalarına uyumlu pano kopyalama (document.execCommand)
+      function copyTextToClipboard(text) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          showToast('Kod panoya kopyalandı!');
+        } catch (err) {
+          showToast('Kopyalama sırasında bir hata oluştu.');
+        }
+      }
+
+      /* ---------------------------------------------------
+         3. TEMA DEĞİŞTİRİCİ & MOBİL MENÜ
+      ---------------------------------------------------- */
+      const htmlEl = document.documentElement;
+      const themeToggleBtn = document.getElementById('themeToggle');
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      // Kullanıcının kayıtlı teması varsa uygula, yoksa koyu tema varsayılan
+      try {
+        const savedTheme = localStorage.getItem('devflow-theme');
+        if (savedTheme === 'light') {
+          htmlEl.classList.remove('dark');
+        } else {
+          htmlEl.classList.add('dark');
+        }
+      } catch (e) {
+        // localStorage erişilemezse varsayılan dark tema kalır
+      }
+
+      themeToggleBtn.addEventListener('click', () => {
+        const isDark = htmlEl.classList.toggle('dark');
+        try {
+          localStorage.setItem('devflow-theme', isDark ? 'dark' : 'light');
+        } catch (e) {}
+      });
+
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+        });
+      });
+
+      /* ---------------------------------------------------
+         4. BÖLÜM 1: PİPELİNE SİMÜLATÖRÜ MANTIĞI
+      ---------------------------------------------------- */
+      let currentStep = 0;
+      let isPlaying = false;
+      let playInterval = null;
+      let isRollbackActive = false;
+
+      const pipelineNodesEl = document.getElementById('pipelineNodes');
+      const rollbackBannerEl = document.getElementById('rollbackBanner');
+      const pipelineContainerEl = document.getElementById('pipelineContainer');
+      const stageDetailPanelEl = document.getElementById('stageDetailPanel');
+      const prevStepBtn = document.getElementById('prevStepBtn');
+      const nextStepBtn = document.getElementById('nextStepBtn');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const playIcon = document.getElementById('playIcon');
+      const playText = document.getElementById('playText');
+      const rollbackBtn = document.getElementById('rollbackBtn');
+      const exitRollbackBtn = document.getElementById('exitRollbackBtn');
+      const copyCodeBtn = document.getElementById('copyCodeBtn');
+
+      const detailBadge = document.getElementById('detailBadge');
+      const detailTitle = document.getElementById('detailTitle');
+      const detailRole = document.getElementById('detailRole');
+      const detailTasks = document.getElementById('detailTasks');
+      const detailOutput = document.getElementById('detailOutput');
+      const detailTerminalLabel = document.getElementById('detailTerminalLabel');
+      const detailCode = document.getElementById('detailCode');
+
+      function stopAutoPlay() {
+        isPlaying = false;
+        if (playInterval) {
+          clearInterval(playInterval);
+          playInterval = null;
+        }
+        playIcon.textContent = '▶';
+        playText.textContent = 'Akışı Oynat';
+      }
+
+      function renderPipeline() {
+        // 6 düğümü ve aralarındaki animasyonlu bağlantıları oluştur
+        pipelineNodesEl.innerHTML = '';
+
+        pipelineStages.forEach((stage, idx) => {
+          const isCurrent = !isRollbackActive && idx === currentStep;
+          const isCompleted = !isRollbackActive && idx < currentStep;
+          const isRollbackSource = isRollbackActive && idx === 5; // Release
+          const isRollbackTarget = isRollbackActive && idx === 4; // Deploy
+
+          // Düğüm Butonu
+          const nodeBtn = document.createElement('button');
+          nodeBtn.type = 'button';
+          nodeBtn.dataset.step = idx;
+
+          let nodeClasses = 'relative flex items-center lg:flex-col justify-between lg:justify-center gap-3 lg:gap-2 p-3.5 lg:p-4 rounded-2xl border text-left lg:text-center transition-all duration-300 w-full lg:w-36 shrink-0 cursor-pointer ';
+
+          if (isRollbackSource) {
+            nodeClasses += 'bg-rose-500/15 border-rose-500 text-rose-600 dark:text-rose-300 shadow-lg shadow-rose-500/20 animate-rollback-pulse';
+          } else if (isRollbackTarget) {
+            nodeClasses += 'bg-amber-500/15 border-amber-500 text-amber-700 dark:text-amber-300 shadow-lg shadow-amber-500/20';
+          } else if (isCurrent) {
+            nodeClasses += 'bg-cyan-500/15 dark:bg-cyan-500/20 border-cyan-500 text-cyan-700 dark:text-cyan-200 shadow-lg shadow-cyan-500/25 lg:-translate-y-1';
+          } else if (isCompleted) {
+            nodeClasses += 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:border-emerald-500';
+          } else {
+            nodeClasses += 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600';
+          }
+
+          nodeBtn.className = nodeClasses;
+
+          // İkon / Numara Rozeti
+          let badgeContent = `${stage.stepNumber}`;
+          let badgeStyle = 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+          if (isRollbackSource) {
+            badgeContent = '!';
+            badgeStyle = 'bg-rose-500 text-white';
+          } else if (isRollbackTarget) {
+            badgeContent = '↺';
+            badgeStyle = 'bg-amber-500 text-slate-950 font-bold';
+          } else if (isCurrent) {
+            badgeStyle = 'bg-cyan-500 text-white shadow-md shadow-cyan-500/40';
+          } else if (isCompleted) {
+            badgeContent = '✓';
+            badgeStyle = 'bg-emerald-500 text-white';
+          }
+
+          nodeBtn.innerHTML = `
+            <div class="flex items-center lg:flex-col gap-3 lg:gap-2">
+              <span class="w-8 h-8 rounded-xl flex items-center justify-center font-mono text-xs font-bold shrink-0 ${badgeStyle}">
+                ${badgeContent}
+              </span>
+              <span class="text-xs sm:text-sm font-bold leading-tight">${stage.shortLabel}</span>
+            </div>
+            <span class="lg:hidden text-[11px] font-mono opacity-70">
+              ${isRollbackSource ? 'Hata' : isRollbackTarget ? 'Geri Dönüldü' : isCurrent ? 'Aktif' : isCompleted ? 'Tamamlandı' : 'Bekliyor'}
+            </span>
+          `;
+
+          nodeBtn.addEventListener('click', () => {
+            isRollbackActive = false;
+            stopAutoPlay();
+            currentStep = idx;
+            renderPipeline();
+          });
+
+          pipelineNodesEl.appendChild(nodeBtn);
+
+          // Bağlantı Çizgisi (Son düğüm hariç)
+          if (idx < pipelineStages.length - 1) {
+            const connector = document.createElement('div');
+            const isFlowActive = !isRollbackActive && idx < currentStep;
+            const isRollbackLink = isRollbackActive && idx === 4; // Deploy <-> Release arası
+
+            connector.className = 'flex items-center justify-center lg:flex-1 h-6 lg:h-auto lg:px-1.5';
+
+            if (isRollbackLink) {
+              connector.innerHTML = `
+                <div class="relative w-1 h-full lg:w-full lg:h-1.5 rounded-full bg-rose-500/30 overflow-hidden">
+                  <div class="absolute inset-0 bg-rose-500 animate-pulse"></div>
+                </div>
+                <span class="hidden lg:inline-block ml-1 text-rose-500 font-bold text-xs">←</span>
+              `;
+            } else {
+              connector.innerHTML = `
+                <div class="relative w-1 h-full lg:w-full lg:h-1 rounded-full ${isFlowActive ? 'bg-cyan-500/30' : 'bg-slate-200 dark:bg-slate-800'} overflow-hidden">
+                  ${isFlowActive ? '<div class="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-flow-right hidden lg:block"></div><div class="absolute inset-0 w-full h-1/2 bg-gradient-to-b from-transparent via-cyan-400 to-transparent animate-flow-down lg:hidden"></div>' : ''}
+                </div>
+              `;
+            }
+            pipelineNodesEl.appendChild(connector);
+          }
+        });
+
+        // Rollback Banner ve Detay Panelini Güncelle
+        if (isRollbackActive) {
+          rollbackBannerEl.classList.remove('hidden');
+          pipelineContainerEl.classList.add('border-rose-500/50');
+          stageDetailPanelEl.classList.add('border-rose-500/40');
+          detailBadge.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30';
+          detailBadge.textContent = 'ACİL KURTARMA';
+          detailTitle.textContent = rollbackStageData.title;
+          detailRole.textContent = rollbackStageData.role;
+          detailOutput.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-mono font-medium';
+          detailOutput.textContent = rollbackStageData.output;
+          detailTerminalLabel.textContent = rollbackStageData.terminalLabel;
+          detailCode.textContent = rollbackStageData.code;
+          detailCode.className = 'p-4 text-xs sm:text-sm font-mono text-rose-300 overflow-x-auto leading-relaxed whitespace-pre-wrap';
+
+          detailTasks.innerHTML = rollbackStageData.tasks
+            .map(
+              (t) => `<li class="flex items-start gap-2"><span class="text-rose-500 mt-0.5">↺</span><span>${t}</span></li>`
+            )
+            .join('');
+        } else {
+          const active = pipelineStages[currentStep];
+          rollbackBannerEl.classList.add('hidden');
+          pipelineContainerEl.classList.remove('border-rose-500/50');
+          stageDetailPanelEl.classList.remove('border-rose-500/40');
+          detailBadge.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20';
+          detailBadge.textContent = `ADIM ${active.stepNumber} / ${pipelineStages.length}`;
+          detailTitle.textContent = active.title;
+          detailRole.textContent = active.role;
+          detailOutput.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-mono font-medium';
+          detailOutput.textContent = active.output;
+          detailTerminalLabel.textContent = active.terminalLabel;
+          detailCode.textContent = active.code;
+          detailCode.className = 'p-4 text-xs sm:text-sm font-mono text-cyan-300 overflow-x-auto leading-relaxed whitespace-pre-wrap';
+
+          detailTasks.innerHTML = active.tasks
+            .map(
+              (t) => `<li class="flex items-start gap-2"><span class="text-cyan-500 mt-0.5">▸</span><span>${t}</span></li>`
+            )
+            .join('');
+        }
+
+        // Önceki / Sonraki buton durumları
+        prevStepBtn.disabled = !isRollbackActive && currentStep === 0;
+        nextStepBtn.disabled = !isRollbackActive && currentStep === pipelineStages.length - 1;
+      }
+
+      prevStepBtn.addEventListener('click', () => {
+        isRollbackActive = false;
+        stopAutoPlay();
+        if (currentStep > 0) {
+          currentStep--;
+          renderPipeline();
+        }
+      });
+
+      nextStepBtn.addEventListener('click', () => {
+        isRollbackActive = false;
+        stopAutoPlay();
+        if (currentStep < pipelineStages.length - 1) {
+          currentStep++;
+          renderPipeline();
+        }
+      });
+
+      playPauseBtn.addEventListener('click', () => {
+        if (isPlaying) {
+          stopAutoPlay();
+          return;
+        }
+        isRollbackActive = false;
+        isPlaying = true;
+        playIcon.textContent = '⏸';
+        playText.textContent = 'Duraklat';
+
+        if (currentStep >= pipelineStages.length - 1) {
+          currentStep = 0;
+        }
+        renderPipeline();
+
+        playInterval = setInterval(() => {
+          if (currentStep < pipelineStages.length - 1) {
+            currentStep++;
+            renderPipeline();
+          } else {
+            stopAutoPlay();
+          }
+        }, 1800);
+      });
+
+      rollbackBtn.addEventListener('click', () => {
+        stopAutoPlay();
+        isRollbackActive = true;
+        currentStep = 4; // Deploy adımına geri dönüş
+        renderPipeline();
+      });
+
+      exitRollbackBtn.addEventListener('click', () => {
+        isRollbackActive = false;
+        currentStep = 5;
+        renderPipeline();
+      });
+
+      copyCodeBtn.addEventListener('click', () => {
+        copyTextToClipboard(detailCode.textContent);
+      });
+
+      /* ---------------------------------------------------
+         5. BÖLÜM 2: ARANABİLİR & FİLTRELENEBİLİR SÖZLÜK
+      ---------------------------------------------------- */
+      let activeCategory = 'Tümü';
+      let searchQuery = '';
+      let viewMode = window.innerWidth < 768 ? 'card' : 'table';
+
+      const glossarySearchInput = document.getElementById('glossarySearch');
+      const glossaryOutput = document.getElementById('glossaryOutput');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const tableViewBtn = document.getElementById('tableViewBtn');
+      const cardViewBtn = document.getElementById('cardViewBtn');
+
+      function getCategoryBadgeClasses(cat) {
+        if (cat === 'Kod & Derleme') return 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/25';
+        if (cat === 'Dağıtım & Yayın') return 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25';
+        return 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/25';
+      }
+
+      function updateViewToggleUI() {
+        if (viewMode === 'table') {
+          tableViewBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition-all';
+          cardViewBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all';
+        } else {
+          cardViewBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition-all';
+          tableViewBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all';
+        }
+      }
+
+      function renderGlossary() {
+        const q = searchQuery.trim().toLowerCase();
+        const filtered = glossaryTerms.filter((item) => {
+          const matchesCat = activeCategory === 'Tümü' || item.category === activeCategory;
+          const matchesText =
+            !q ||
+            item.term.toLowerCase().includes(q) ||
+            item.meaning.toLowerCase().includes(q) ||
+            item.usage.toLowerCase().includes(q) ||
+            item.example.toLowerCase().includes(q);
+          return matchesCat && matchesText;
+        });
+
+        if (filtered.length === 0) {
+          glossaryOutput.innerHTML = `
+            <div class="rounded-2xl bg-white/80 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 p-10 text-center space-y-2">
+              <p class="text-base font-semibold text-slate-700 dark:text-slate-300">Aramanızla eşleşen terim bulunamadı.</p>
+              <p class="text-xs text-slate-500">Farklı bir anahtar kelime deneyin veya kategori filtresini sıfırlayın.</p>
+            </div>
+          `;
+          return;
+        }
+
+        if (viewMode === 'table') {
+          glossaryOutput.innerHTML = `
+            <div class="rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <th class="py-3.5 px-4 w-44">Terim &amp; Kategori</th>
+                      <th class="py-3.5 px-4">Ne Demek?</th>
+                      <th class="py-3.5 px-4">Ne Zaman / Nasıl Kullanılır?</th>
+                      <th class="py-3.5 px-4 w-64">Somut Örnek</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-200/80 dark:divide-slate-800/80 text-sm">
+                    ${filtered
+                      .map(
+                        (item) => `
+                      <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        <td class="py-4 px-4 align-top space-y-1.5">
+                          <div class="font-bold text-slate-900 dark:text-white">${item.term}</div>
+                          <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono border ${getCategoryBadgeClasses(item.category)}">${item.category}</span>
+                        </td>
+                        <td class="py-4 px-4 align-top text-slate-700 dark:text-slate-300 leading-relaxed">${item.meaning}</td>
+                        <td class="py-4 px-4 align-top text-slate-600 dark:text-slate-400 leading-relaxed">${item.usage}</td>
+                        <td class="py-4 px-4 align-top">
+                          <code class="block p-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono text-cyan-700 dark:text-cyan-300 leading-relaxed">${item.example}</code>
+                        </td>
+                      </tr>
+                    `
+                      )
+                      .join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        } else {
+          glossaryOutput.innerHTML = `
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${filtered
+                .map(
+                  (item) => `
+                <article class="rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-5 shadow-lg hover:border-cyan-500/40 transition-all flex flex-col justify-between gap-4">
+                  <div class="space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                      <h3 class="text-lg font-bold text-slate-900 dark:text-white">${item.term}</h3>
+                      <span class="shrink-0 px-2.5 py-0.5 rounded-md text-[10px] font-mono border ${getCategoryBadgeClasses(item.category)}">${item.category}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${item.meaning}</p>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      <strong class="text-slate-700 dark:text-slate-300">Kullanım:</strong> ${item.usage}
+                    </div>
+                  </div>
+                  <div class="pt-2">
+                    <code class="block p-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-mono text-cyan-700 dark:text-cyan-300 leading-relaxed">${item.example}</code>
+                  </div>
+                </article>
+              `
+                )
+                .join('')}
+            </div>
+          `;
+        }
+      }
+
+      glossarySearchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderGlossary();
+      });
+
+      filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeCategory = btn.dataset.category;
+          filterBtns.forEach((b) => {
+            if (b === btn) {
+              b.className = 'filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all bg-cyan-600 text-white shadow-sm';
+            } else {
+              b.className = 'filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700';
+            }
+          });
+          renderGlossary();
+        });
+      });
+
+      tableViewBtn.addEventListener('click', () => {
+        viewMode = 'table';
+        updateViewToggleUI();
+        renderGlossary();
+      });
+
+      cardViewBtn.addEventListener('click', () => {
+        viewMode = 'card';
+        updateViewToggleUI();
+        renderGlossary();
+      });
+
+      /* ---------------------------------------------------
+         6. BÖLÜM 4: MİNİ SENARYO QUİZİ MANTIĞI
+      ---------------------------------------------------- */
+      let quizIndex = 0;
+      let quizScore = 0;
+      let questionAnswered = false;
+
+      const quizHeader = document.getElementById('quizHeader');
+      const quizBody = document.getElementById('quizBody');
+      const quizResult = document.getElementById('quizResult');
+      const quizProgressBadge = document.getElementById('quizProgressBadge');
+      const quizScoreLive = document.getElementById('quizScoreLive');
+      const quizProgressBar = document.getElementById('quizProgressBar');
+      const quizQuestionEl = document.getElementById('quizQuestion');
+      const quizOptionsEl = document.getElementById('quizOptions');
+      const quizFeedbackEl = document.getElementById('quizFeedback');
+      const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+      const resultScoreText = document.getElementById('resultScoreText');
+      const resultMessage = document.getElementById('resultMessage');
+      const resultIcon = document.getElementById('resultIcon');
+      const restartQuizBtn = document.getElementById('restartQuizBtn');
+
+      function renderQuizQuestion() {
+        const current = quizQuestions[quizIndex];
+        questionAnswered = false;
+
+        quizProgressBadge.textContent = `Soru ${quizIndex + 1} / ${quizQuestions.length}`;
+        quizScoreLive.textContent = `Skor: ${quizScore}`;
+        quizProgressBar.style.width = `${((quizIndex + 1) / quizQuestions.length) * 100}%`;
+
+        quizQuestionEl.textContent = current.question;
+        quizFeedbackEl.classList.add('hidden');
+        nextQuestionBtn.classList.add('hidden');
+
+        quizOptionsEl.innerHTML = '';
+        current.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full text-left px-4 py-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/60 hover:bg-cyan-500/5 text-sm font-medium text-slate-800 dark:text-slate-200 transition-all flex items-center justify-between gap-3';
+          btn.innerHTML = `
+            <span class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800 text-xs font-mono font-bold flex items-center justify-center shrink-0">${String.fromCharCode(65 + idx)}</span>
+              <span>${opt}</span>
+            </span>
+          `;
+          btn.addEventListener('click', () => handleQuizAnswer(idx, btn));
+          quizOptionsEl.appendChild(btn);
+        });
+      }
+
+      function handleQuizAnswer(selectedIdx, clickedBtn) {
+        if (questionAnswered) return;
+        questionAnswered = true;
+
+        const current = quizQuestions[quizIndex];
+        const isCorrect = selectedIdx === current.correctIndex;
+        const allOptionBtns = quizOptionsEl.querySelectorAll('button');
+
+        if (isCorrect) {
+          quizScore++;
+          quizScoreLive.textContent = `Skor: ${quizScore}`;
+        }
+
+        allOptionBtns.forEach((btn, idx) => {
+          btn.disabled = true;
+          btn.classList.remove('hover:border-cyan-500/60', 'hover:bg-cyan-500/5');
+          if (idx === current.correctIndex) {
+            btn.className = 'w-full text-left px-4 py-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500 text-sm font-semibold text-emerald-800 dark:text-emerald-200 flex items-center justify-between gap-3';
+            btn.insertAdjacentHTML('beforeend', '<span class="font-bold text-emerald-500">✓ Doğru</span>');
+          } else if (idx === selectedIdx && !isCorrect) {
+            btn.className = 'w-full text-left px-4 py-3.5 rounded-xl bg-rose-500/15 border border-rose-500 text-sm font-semibold text-rose-800 dark:text-rose-200 flex items-center justify-between gap-3';
+            btn.insertAdjacentHTML('beforeend', '<span class="font-bold text-rose-500">✕ Yanlış</span>');
+          } else {
+            btn.classList.add('opacity-50');
+          }
+        });
+
+        quizFeedbackEl.className = `rounded-xl p-4 text-sm leading-relaxed animate-fade-in border ${
+          isCorrect
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-200'
+            : 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-200'
+        }`;
+        quizFeedbackEl.innerHTML = `<strong>${isCorrect ? 'Harika!' : 'Doğru Cevap: ' + current.options[current.correctIndex]}</strong> — ${current.explanation}`;
+
+        nextQuestionBtn.textContent = quizIndex === quizQuestions.length - 1 ? 'Sonuçları Gör →' : 'Sonraki Soru →';
+        nextQuestionBtn.classList.remove('hidden');
+      }
+
+      nextQuestionBtn.addEventListener('click', () => {
+        if (quizIndex < quizQuestions.length - 1) {
+          quizIndex++;
+          renderQuizQuestion();
+        } else {
+          showQuizResult();
+        }
+      });
+
+      function showQuizResult() {
+        quizHeader.classList.add('hidden');
+        quizBody.classList.add('hidden');
+        quizResult.classList.remove('hidden');
+
+        resultScoreText.textContent = `Toplam Skor: ${quizScore} / ${quizQuestions.length}`;
+
+        if (quizScore === quizQuestions.length) {
+          resultIcon.textContent = '🚀';
+          resultMessage.textContent = 'Mükemmel! Tüm SDLC ve CI/CD kavramlarına tamamen hakimsin. Canlıya çıkmaya hazırsın!';
+        } else if (quizScore >= 3) {
+          resultIcon.textContent = '⚡';
+          resultMessage.textContent = 'Çok iyi gidiyorsun! Temel süreçleri kavramışsın, ufak detayları sözlükten tekrar gözden geçirebilirsin.';
+        } else {
+          resultIcon.textContent = '📘';
+          resultMessage.textContent = 'Harika bir başlangıç! Pipeline simülatörünü ve 4 temel fark bölümünü inceleyip tekrar deneyebilirsin.';
+        }
+      }
+
+      restartQuizBtn.addEventListener('click', () => {
+        quizIndex = 0;
+        quizScore = 0;
+        quizHeader.classList.remove('hidden');
+        quizBody.classList.remove('hidden');
+        quizResult.classList.add('hidden');
+        renderQuizQuestion();
+      });
+
+      /* ---------------------------------------------------
+         7. BAŞLANGIÇ ÇALIŞTIRMA
+      ---------------------------------------------------- */
+      renderPipeline();
+      updateViewToggleUI();
+      renderGlossary();
+      renderQuizQuestion();
+    })();
+  </script>
+</body>
+</html>

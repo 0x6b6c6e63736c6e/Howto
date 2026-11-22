@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik katılımcı kaydında EF Core transaction ve SQL Server kilidi ile kontenjan aşımını önle.">
+<title>Transaction ve eşzamanlı kayıt · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/" aria-current="page"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content">
+<div class="lesson">
+<nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>EF Core</span></nav>
+<h1>Transaction ve eşzamanlı kayıt</h1>
+<p class="lead">Etkinliğe katılımcı kaydet. EF Core transaction’ı ve SQL Server kilidiyle iki eşzamanlı isteğin aynı son yeri almasını önle.</p>
+<div class="lesson-meta"><span>.NET 10 ve EF Core 10</span><span>Ders 6</span><span>Yaklaşık 40 dakika</span></div>
+<div class="note"><strong>Ön koşul</strong><p>.NET 10 SDK ve <a href="/dersler/ef-core-linq-raporlama/">beşinci dersteki SQL Server veritabanı</a>. Eşzamanlılık deneyi için yazma yetkisi olan bir geliştirici veritabanı kullan.</p></div>
+<a class="button secondary" href="/ornekler/etkinlikler-ders-06.zip" download>Örnek projeyi indir</a>
+<h2 id="yaris">Son yer için iki istek gelirse</h2>
+
+<p>Kontenjanı 1 olan bir etkinliği düşün. İki istek aynı anda kayıt sayısını okursa ikisi de 0 görebilir. Farklı iki katılımcı için bileşik birincil anahtar çakışmaz, dolayısıyla iki ekleme de başarılı olabilir. <code>SaveChangesAsync</code> her yazmayı kendi içinde güvenli yürütür. Kontenjan kuralı ise önceki okumanın da aynı transaction içinde korunmasını gerektirir.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Son yer için iki isteğin sırası">
+<table><thead><tr><th scope="col">A isteği</th><th scope="col">B isteği</th></tr></thead><tbody>
+<tr><td>Etkinlik kilidini alır ve 0 kayıt görür.</td><td>Aynı etkinliğin kilidini bekler.</td></tr>
+<tr><td>Katılımcıyı ekler ve commit eder.</td><td>Kilit açılınca sayımı yapar ve 1 kayıt görür.</td></tr>
+<tr><td>Kayıt başarılı.</td><td>Kontenjan dolu. Yeni kayıt açılmaz.</td></tr>
+</tbody></table></div>
+<p>Kilidi önce alan istek değişebilir. Beklenen sonuç bir başarı ve bir dolu kontenjan yanıtıdır.</p>
+<h2 id="transaction">Sayım ve eklemeyi aynı transaction içinde yap</h2>
+
+<p>Örnek, SQL Server’da etkinlik kaydını <code>UPDLOCK, HOLDLOCK</code> ile okur. Bir etkinlik için ikinci kayıt isteği aynı kilidi almak zorunda kalır ve ilk transaction bitene kadar sayım adımına geçemez. <code>ReadCommitted</code> ile ikinci istek, kilidi aldıktan sonra güncel kayıt sayısını okur.</p>
+<p><code>FromSql</code> içindeki <code>etkinlikId</code> SQL parametresi olarak gönderilir. Sıra önemli. Önce etkinliği kilitle, sonra katılımcıyı ve çift kaydı kontrol et, ardından say ve ekle. <code>CommitAsync</code> başarılı değişikliği kalıcılaştırır. Erken dönüş veya hata durumunda <code>await using</code> commit edilmemiş transaction’ı kapatır ve kilit bırakılır.</p>
+<div class="code"><div class="code-head"><span>Data/EtkinlikKayitServisi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.Data;
+using Etkinlikler.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public enum KayitSonucu
+{
+    Basarili,
+    EtkinlikBulunamadi,
+    KatilimciBulunamadi,
+    ZatenKayitli,
+    KontenjanDolu
+}
+
+public sealed class EtkinlikKayitServisi(EtkinlikDbContext db)
+{
+    public async Task&lt;KayitSonucu&gt; KaydetAsync(
+        int etkinlikId, int katilimciId, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(
+            IsolationLevel.ReadCommitted, cancellationToken);
+
+        var etkinlik = await db.Etkinlikler
+            .FromSql($&quot;&quot;&quot;
+                SELECT Id, Ad, Kontenjan
+                FROM dbo.Etkinlikler WITH (UPDLOCK, HOLDLOCK)
+                WHERE Id = {etkinlikId}
+                &quot;&quot;&quot;)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (etkinlik is null)
+        {
+            return KayitSonucu.EtkinlikBulunamadi;
+        }
+
+        if (!await db.Set&lt;Katilimci&gt;().AnyAsync(k =&gt; k.Id == katilimciId, cancellationToken))
+        {
+            return KayitSonucu.KatilimciBulunamadi;
+        }
+
+        var kayitlar = db.EtkinlikKayitlari.Where(k =&gt; k.EtkinlikId == etkinlikId);
+        if (await kayitlar.AnyAsync(k =&gt; k.KatilimciId == katilimciId, cancellationToken))
+        {
+            return KayitSonucu.ZatenKayitli;
+        }
+
+        if (await kayitlar.CountAsync(cancellationToken) &gt;= etkinlik.Kontenjan)
+        {
+            return KayitSonucu.KontenjanDolu;
+        }
+
+        db.EtkinlikKayitlari.Add(new EtkinlikKaydi
+        {
+            EtkinlikId = etkinlikId,
+            KatilimciId = katilimciId
+        });
+
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return KayitSonucu.Basarili;
+    }
+}</code></pre></div>
+<p><code>EtkinlikId</code> ve <code>KatilimciId</code> üzerindeki bileşik anahtar aynı katılımcının tekrar eklenmesine karşı veritabanı koruması sağlar. Kapasite garantisi için kayıt ekleyen bütün akışlar aynı etkinlik kilidini kullanmalıdır. Uygulamayı atlayan doğrudan SQL eklemeleri veya kontenjanı kayıt sayısının altına indiren ayrı güncellemeler bu kurala dahil edilmelidir.</p>
+<h2 id="form">Kayıt formunu bağla</h2>
+
+<p><code>Program.cs</code> içinde kayıt servisini istek başına kaydet. Form, var olan bir etkinlik ve katılımcı seçtirir. POST action doğrulama belirtecini kontrol eder. Başarıdan sonra doluluk raporuna yönlendirir. Dolu kontenjan veya tekrar kayıt durumunda seçimleri ve hata mesajını formda gösterir.</p>
+<div class="code"><div class="code-head"><span>Program.cs · Servis kaydı</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>builder.Services.AddScoped&lt;EtkinlikKayitServisi&gt;();</code></pre></div>
+<div class="code"><div class="code-head"><span>Controllers/KayitlarController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Controllers;
+
+public class KayitlarController(EtkinlikDbContext db, EtkinlikKayitServisi kayitServisi) : Controller
+{
+    [HttpGet]
+    public Task&lt;IActionResult&gt; Ekle(CancellationToken cancellationToken)
+        =&gt; FormuGosterAsync(new KatilimciKayitFormu(), cancellationToken);
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Ekle(KatilimciKayitFormu form, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return await FormuGosterAsync(form, cancellationToken);
+        }
+
+        var sonuc = await kayitServisi.KaydetAsync(
+            form.EtkinlikId!.Value, form.KatilimciId!.Value, cancellationToken);
+
+        if (sonuc == KayitSonucu.Basarili)
+        {
+            TempData[&quot;KayitMesaji&quot;] = &quot;Katılımcı kaydedildi.&quot;;
+            return RedirectToAction(&quot;Doluluk&quot;, &quot;Etkinlikler&quot;);
+        }
+
+        var mesaj = sonuc switch
+        {
+            KayitSonucu.EtkinlikBulunamadi =&gt; &quot;Etkinlik bulunamadı.&quot;,
+            KayitSonucu.KatilimciBulunamadi =&gt; &quot;Katılımcı bulunamadı.&quot;,
+            KayitSonucu.ZatenKayitli =&gt; &quot;Bu katılımcı etkinliğe zaten kayıtlı.&quot;,
+            _ =&gt; &quot;Etkinliğin kontenjanı dolu.&quot;
+        };
+
+        ModelState.AddModelError(string.Empty, mesaj);
+        return await FormuGosterAsync(form, cancellationToken);
+    }
+
+    private async Task&lt;IActionResult&gt; FormuGosterAsync(
+        KatilimciKayitFormu form, CancellationToken cancellationToken)
+    {
+        var etkinlikler = await db.Etkinlikler.AsNoTracking().OrderBy(e =&gt; e.Ad).ThenBy(e =&gt; e.Id)
+            .ToListAsync(cancellationToken);
+        var katilimcilar = await db.Set&lt;Katilimci&gt;().AsNoTracking().OrderBy(k =&gt; k.Ad).ThenBy(k =&gt; k.Id)
+            .ToListAsync(cancellationToken);
+
+        ViewBag.Etkinlikler = new SelectList(etkinlikler, nameof(Etkinlik.Id), nameof(Etkinlik.Ad));
+        ViewBag.Katilimcilar = new SelectList(katilimcilar, nameof(Katilimci.Id), nameof(Katilimci.Ad));
+        return View(nameof(Ekle), form);
+    }
+}</code></pre></div>
+<div class="code"><div class="code-head"><span>Views/Kayitlar/Ekle.cshtml</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>@model KatilimciKayitFormu
+&lt;!doctype html&gt;
+&lt;html lang=&quot;tr&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;
+    &lt;title&gt;Katılımcı kaydet&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;main&gt;
+        &lt;h1&gt;Katılımcı kaydet&lt;/h1&gt;
+        &lt;form asp-action=&quot;Ekle&quot; method=&quot;post&quot;&gt;
+            &lt;div asp-validation-summary=&quot;ModelOnly&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+            &lt;p&gt;
+                &lt;label asp-for=&quot;EtkinlikId&quot;&gt;&lt;/label&gt;
+                &lt;select asp-for=&quot;EtkinlikId&quot; asp-items=&quot;ViewBag.Etkinlikler&quot; aria-describedby=&quot;etkinlik-hata&quot;&gt;
+                    &lt;option value=&quot;&quot;&gt;Etkinlik seçin&lt;/option&gt;
+                &lt;/select&gt;
+                &lt;span asp-validation-for=&quot;EtkinlikId&quot; id=&quot;etkinlik-hata&quot;&gt;&lt;/span&gt;
+            &lt;/p&gt;
+            &lt;p&gt;
+                &lt;label asp-for=&quot;KatilimciId&quot;&gt;&lt;/label&gt;
+                &lt;select asp-for=&quot;KatilimciId&quot; asp-items=&quot;ViewBag.Katilimcilar&quot; aria-describedby=&quot;katilimci-hata&quot;&gt;
+                    &lt;option value=&quot;&quot;&gt;Katılımcı seçin&lt;/option&gt;
+                &lt;/select&gt;
+                &lt;span asp-validation-for=&quot;KatilimciId&quot; id=&quot;katilimci-hata&quot;&gt;&lt;/span&gt;
+            &lt;/p&gt;
+            &lt;p&gt;&lt;button type=&quot;submit&quot;&gt;Kaydet&lt;/button&gt;&lt;/p&gt;
+        &lt;/form&gt;
+        &lt;p&gt;&lt;a asp-controller=&quot;Etkinlikler&quot; asp-action=&quot;Doluluk&quot;&gt;Doluluk raporuna dön&lt;/a&gt;&lt;/p&gt;
+    &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+<p>Razor formu hem ana listeden hem doluluk raporundan açılır. Örnek, sistemdeki katılımcıları seçmek için bir yönetim ekranı yaklaşımı kullanır. Katılımcı hesabı veya oturum açma bu dersin kapsamında yer almıyor.</p>
+<h2 id="calistir">SQL Server üzerinde çalıştır</h2>
+
+<p>Örnek ZIP’i açıp <code>Etkinlikler</code> klasörüne gir. Üçüncü dersteki bağlantı ayarını kullan. Bu ders beşinci derste oluşturulan tabloları kullanır. Veritabanında migration’lar zaten uygulanmışsa <code>database update</code> yeni değişiklik yapmaz.</p>
+<div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet restore
+dotnet tool restore
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5084</code></pre></div>
+<p>PowerShell’de önce <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> çalıştır ve komutları ortam değişkeni ön eki olmadan gir.</p>
+<p><code>http://localhost:5084/Kayitlar/Ekle</code> adresini aç. Temiz örnek veride SQL Server Semineri’ne Deniz Kaya’yı eklediğinde doluluk raporu seminer için 1 kayıt ve 39 kalan yer gösterir. Aynı seçimi yeniden gönderdiğinde tekrar kayıt mesajı görünür.</p>
+<h2 id="deney">Son yer deneyini iki ayrı DbContext ile çalıştır</h2>
+
+<p>Deney her çalıştırmada geliştirici veritabanına kontenjanı 1 olan yeni bir <strong>Son yer deneyi</strong> etkinliği ekler. İki mevcut katılımcı adına <code>Task.WhenAll</code> ile kayıt denemelerini bir araya getirir. Her deneme kendi bağımlılık kapsamı, <code>DbContext</code> ve transaction’ıyla çalışır. Bu, iki ayrı uygulama isteğinin hizmet katmanını temsil eder.</p>
+<div class="code"><div class="code-head"><span>Terminal · Eşzamanlı kayıt deneyi</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile -- --kayit-deneyi</code></pre></div>
+<div class="code"><div class="code-head"><span>Beklenen çıktı · Kazananın sırası değişebilir</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>Etkinlik #3: Basarili, KontenjanDolu. Toplam kayıt: 1.</code></pre></div>
+<div class="code"><div class="code-head"><span>Data/KayitDeneyi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public static class KayitDeneyi
+{
+    public static async Task CalistirAsync(IServiceProvider services, CancellationToken cancellationToken)
+    {
+        await using var kontrolScope = services.CreateAsyncScope();
+        var db = kontrolScope.ServiceProvider.GetRequiredService&lt;EtkinlikDbContext&gt;();
+        var katilimcilar = await db.Set&lt;Katilimci&gt;().OrderBy(k =&gt; k.Id).Select(k =&gt; k.Id)
+            .Take(2).ToListAsync(cancellationToken);
+        if (katilimcilar.Count != 2)
+        {
+            throw new InvalidOperationException(&quot;Deney için en az iki katılımcı gerekir.&quot;);
+        }
+
+        var etkinlik = new Etkinlik { Ad = &quot;Son yer deneyi&quot;, Kontenjan = 1 };
+        db.Etkinlikler.Add(etkinlik);
+        await db.SaveChangesAsync(cancellationToken);
+
+        async Task&lt;KayitSonucu&gt; DeneAsync(int katilimciId)
+        {
+            await using var scope = services.CreateAsyncScope();
+            var kayit = scope.ServiceProvider.GetRequiredService&lt;EtkinlikKayitServisi&gt;();
+            return await kayit.KaydetAsync(etkinlik.Id, katilimciId, cancellationToken);
+        }
+
+        var sonuclar = await Task.WhenAll(DeneAsync(katilimcilar[0]), DeneAsync(katilimcilar[1]));
+        var kayitSayisi = await db.EtkinlikKayitlari.CountAsync(
+            k =&gt; k.EtkinlikId == etkinlik.Id, cancellationToken);
+
+        Console.WriteLine($&quot;Etkinlik #{etkinlik.Id}: {string.Join(&quot;, &quot;, sonuclar)}. Toplam kayıt: {kayitSayisi}.&quot;);
+        if (kayitSayisi != 1 || !sonuclar.Contains(KayitSonucu.Basarili)
+            || !sonuclar.Contains(KayitSonucu.KontenjanDolu))
+        {
+            throw new InvalidOperationException(&quot;Deney beklenen sonucu vermedi.&quot;);
+        }
+    }
+}</code></pre></div>
+<p>Deney, iki sonucu ve veritabanındaki kayıt sayısını kontrol eder. Çıktıdaki etkinlik kimliği veritabanına göre değişir. Deney etkinliği raporda kalır.</p>
+<h2 id="alistirma">Alıştırma</h2>
+
+<p>Deneyde kontenjanı 2 yap. İki farklı katılımcıyla her iki işlemin başarılı, kayıt sayısının 2 olmasını bekleyecek şekilde doğrulamayı değiştir. Ardından boş bir test etkinliğinde iki denemeye de aynı katılımcı kimliğini gönder. Bir başarılı ve bir tekrar kayıt sonucu bekle.</p>
+<p><a href="https://learn.microsoft.com/en-us/ef/core/saving/transactions">Microsoft Learn · EF Core transaction’ları</a> · <a href="https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver17">Microsoft Learn · SQL Server kilit ipuçları</a></p>
+<a class="button secondary" href="/dersler/ef-core-linq-raporlama/">Önceki ders · EF Core ile doluluk</a>
+<a class="button primary" href="/dersler/identity-ve-yetkilendirme/">Sonraki ders · Identity ve yetkilendirme</a>
+</div></main>
+<aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#yaris">Son yer için iki istek gelirse</a><a href="#transaction">Sayım ve eklemeyi aynı transaction içinde yap</a><a href="#form">Kayıt formunu bağla</a><a href="#calistir">SQL Server üzerinde çalıştır</a><a href="#deney">Son yer deneyini iki ayrı DbContext ile çalıştır</a><a href="#alistirma">Alıştırma</a></nav></aside>
+</div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

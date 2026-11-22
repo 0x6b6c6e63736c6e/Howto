@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik katılımcı kaydında EF Core transaction ve SQL Server kilidi ile kontenjan aşımını önle.">
+<title>Identity ve rol tabanlı yetkilendirme · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/" aria-current="page"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>ASP.NET Core</span></nav><h1>Identity ve rol tabanlı yetkilendirme</h1><p class="lead">Etkinlik projesine kullanıcı girişi ekle ve yönetim ekranlarını yönetici rolüyle koru.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 7</span><span>Yaklaşık 40 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/ef-core-transaction-kontenjan/">Altıncı dersin SQL Server veritabanı</a> ve .NET 10 SDK.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-07.zip" download>Örnek projeyi indir</a><h2 id="identity">Identity ve veritabanı</h2><p>Identity kullanıcıları, parola özetlerini, rolleri ve oturum bilgilerini yönetir. <code>IdentityDbContext</code> mevcut etkinlik tablolarının yanına Identity modelini ekler. <code>base.OnModelCreating</code> Identity eşlemelerini kurar. Örnekte <code>IdentityEkle</code> migration dosyası hazırdır.</p><div class="code"><div class="code-head"><span>Data/EtkinlikDbContext.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public sealed class EtkinlikDbContext(DbContextOptions&lt;EtkinlikDbContext&gt; options)
+    : IdentityDbContext(options)
+{
+    public DbSet&lt;Etkinlik&gt; Etkinlikler =&gt; Set&lt;Etkinlik&gt;();
+
+    public DbSet&lt;EtkinlikKaydi&gt; EtkinlikKayitlari =&gt; Set&lt;EtkinlikKaydi&gt;();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        var etkinlik = modelBuilder.Entity&lt;Etkinlik&gt;();
+
+        etkinlik.ToTable(&quot;Etkinlikler&quot;, table =&gt;
+            table.HasCheckConstraint(&quot;CK_Etkinlikler_Kontenjan&quot;, &quot;[Kontenjan] BETWEEN 1 AND 500&quot;));
+
+        etkinlik.Property(item =&gt; item.Ad).HasMaxLength(80).IsRequired();
+
+        etkinlik.HasData(
+            new Etkinlik { Id = 1, Ad = &quot;Web Geliştirme Atölyesi&quot;, Kontenjan = 25 },
+            new Etkinlik { Id = 2, Ad = &quot;SQL Server Semineri&quot;, Kontenjan = 40 });
+
+        var katilimci = modelBuilder.Entity&lt;Katilimci&gt;();
+        katilimci.ToTable(&quot;Katilimcilar&quot;);
+        katilimci.Property(item =&gt; item.Ad).HasMaxLength(80).IsRequired();
+        katilimci.HasData(
+            new Katilimci { Id = 1, Ad = &quot;Deniz Kaya&quot; },
+            new Katilimci { Id = 2, Ad = &quot;Ece Arslan&quot; },
+            new Katilimci { Id = 3, Ad = &quot;Mert Yılmaz&quot; });
+
+        var kayit = modelBuilder.Entity&lt;EtkinlikKaydi&gt;();
+        kayit.ToTable(&quot;EtkinlikKayitlari&quot;);
+        kayit.HasKey(item =&gt; new { item.EtkinlikId, item.KatilimciId });
+        kayit.HasOne&lt;Etkinlik&gt;().WithMany().HasForeignKey(item =&gt; item.EtkinlikId);
+        kayit.HasOne&lt;Katilimci&gt;().WithMany().HasForeignKey(item =&gt; item.KatilimciId);
+        kayit.HasData(
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 1 },
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 2 },
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 3 });
+    }
+}</code></pre></div><h2 id="yapilandirma">Identity ve oturum yapılandırması</h2><p><code>AddIdentity</code> kullanıcı ve rol servislerini, <code>AddEntityFrameworkStores</code> SQL Server veri erişimini kurar. Authentication oturum çerezini okur. Authorization rol kurallarını uygular. Sıralama önemlidir.</p><div class="code"><div class="code-head"><span>Program.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+if (args is [&quot;--rapor-sql&quot;])
+{
+    // SQL üretmek için sağlayıcı gerekir. Bu bağlantı açılmaz.
+    var options = new DbContextOptionsBuilder&lt;EtkinlikDbContext&gt;()
+        .UseSqlServer(&quot;Server=localhost;Database=DotNetAtolyeEtkinlikler;Integrated Security=True;Encrypt=True&quot;)
+        .Options;
+    using var db = new EtkinlikDbContext(options);
+    Console.WriteLine(DolulukRaporu.Sorgu(db).ToQueryString());
+    return;
+}
+
+var yoneticiOlustur = args is [&quot;--yonetici-olustur&quot;];
+var kayitDeneyi = args is [&quot;--kayit-deneyi&quot;];
+var builder = WebApplication.CreateBuilder(kayitDeneyi || yoneticiOlustur ? [] : args);
+builder.Services.AddControllersWithViews();
+builder.Services.AddScoped&lt;EtkinlikKayitServisi&gt;();
+builder.Services.AddIdentity&lt;IdentityUser, IdentityRole&gt;()
+    .AddEntityFrameworkStores&lt;EtkinlikDbContext&gt;()
+    .AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(options =&gt;
+{
+    options.LoginPath = &quot;/Hesap/Giris&quot;;
+    options.AccessDeniedPath = &quot;/Hesap/ErisimEngellendi&quot;;
+});
+
+var connection = builder.Configuration.GetConnectionString(&quot;EtkinlikDb&quot;)
+    ?? throw new InvalidOperationException(&quot;ConnectionStrings:EtkinlikDb ayarını girin.&quot;);
+
+builder.Services.AddDbContext&lt;EtkinlikDbContext&gt;(options =&gt;
+    options.UseSqlServer(connection));
+
+await using var app = builder.Build();
+
+if (yoneticiOlustur)
+{
+    await YoneticiKurulumu.CalistirAsync(app.Services, builder.Configuration);
+    return;
+}
+
+if (kayitDeneyi)
+{
+    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+    await KayitDeneyi.CalistirAsync(app.Services, timeout.Token);
+    return;
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: &quot;default&quot;,
+    pattern: &quot;{controller=Etkinlikler}/{action=Index}/{id?}&quot;);
+
+await app.RunAsync();</code></pre></div><h2 id="rol">Yönetim ekranlarını koru</h2><p><code>[Authorize(Roles = "Yonetici")]</code> rol denetimini sunucuda uygular. Etkinlik listeleme herkese açıktır. Etkinlik ekleme, doluluk raporu ve katılımcı kaydı yöneticiye açıktır. Menüde bağlantıyı gizlemek sunucu kontrolünü tamamlar.</p><div class="code"><div class="code-head"><span>Controllers/EtkinliklerController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Microsoft.AspNetCore.Authorization;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Controllers;
+
+public class EtkinliklerController(EtkinlikDbContext db) : Controller
+{
+    [HttpGet]
+    public async Task&lt;IActionResult&gt; Index(CancellationToken cancellationToken)
+    {
+        var etkinlikler = await db.Etkinlikler
+            .AsNoTracking()
+            .OrderBy(etkinlik =&gt; etkinlik.Id)
+            .ToListAsync(cancellationToken);
+
+        return View(etkinlikler);
+    }
+
+    [Authorize(Roles = &quot;Yonetici&quot;)]
+    [HttpGet]
+    public async Task&lt;IActionResult&gt; Doluluk(CancellationToken cancellationToken)
+    {
+        var rapor = await DolulukRaporu.Sorgu(db).ToListAsync(cancellationToken);
+        return View(rapor);
+    }
+
+    [Authorize(Roles = &quot;Yonetici&quot;)]
+    [HttpGet]
+    public IActionResult Ekle() =&gt; View(new EtkinlikFormu());
+
+    [Authorize(Roles = &quot;Yonetici&quot;)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Ekle(EtkinlikFormu form, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(form);
+        }
+
+        db.Etkinlikler.Add(new Etkinlik
+        {
+            Ad = form.Ad!,
+            Kontenjan = form.Kontenjan!.Value
+        });
+
+        await db.SaveChangesAsync(cancellationToken);
+        return RedirectToAction(nameof(Index));
+    }
+}</code></pre></div><div class="code"><div class="code-head"><span>Controllers/KayitlarController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Microsoft.AspNetCore.Authorization;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Controllers;
+
+[Authorize(Roles = &quot;Yonetici&quot;)]
+public class KayitlarController(EtkinlikDbContext db, EtkinlikKayitServisi kayitServisi) : Controller
+{
+    [HttpGet]
+    public Task&lt;IActionResult&gt; Ekle(CancellationToken cancellationToken)
+        =&gt; FormuGosterAsync(new KatilimciKayitFormu(), cancellationToken);
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Ekle(KatilimciKayitFormu form, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return await FormuGosterAsync(form, cancellationToken);
+        }
+
+        var sonuc = await kayitServisi.KaydetAsync(
+            form.EtkinlikId!.Value, form.KatilimciId!.Value, cancellationToken);
+
+        if (sonuc == KayitSonucu.Basarili)
+        {
+            TempData[&quot;KayitMesaji&quot;] = &quot;Katılımcı kaydedildi.&quot;;
+            return RedirectToAction(&quot;Doluluk&quot;, &quot;Etkinlikler&quot;);
+        }
+
+        var mesaj = sonuc switch
+        {
+            KayitSonucu.EtkinlikBulunamadi =&gt; &quot;Etkinlik bulunamadı.&quot;,
+            KayitSonucu.KatilimciBulunamadi =&gt; &quot;Katılımcı bulunamadı.&quot;,
+            KayitSonucu.ZatenKayitli =&gt; &quot;Bu katılımcı etkinliğe zaten kayıtlı.&quot;,
+            _ =&gt; &quot;Etkinliğin kontenjanı dolu.&quot;
+        };
+
+        ModelState.AddModelError(string.Empty, mesaj);
+        return await FormuGosterAsync(form, cancellationToken);
+    }
+
+    private async Task&lt;IActionResult&gt; FormuGosterAsync(
+        KatilimciKayitFormu form, CancellationToken cancellationToken)
+    {
+        var etkinlikler = await db.Etkinlikler.AsNoTracking().OrderBy(e =&gt; e.Ad).ThenBy(e =&gt; e.Id)
+            .ToListAsync(cancellationToken);
+        var katilimcilar = await db.Set&lt;Katilimci&gt;().AsNoTracking().OrderBy(k =&gt; k.Ad).ThenBy(k =&gt; k.Id)
+            .ToListAsync(cancellationToken);
+
+        ViewBag.Etkinlikler = new SelectList(etkinlikler, nameof(Etkinlik.Id), nameof(Etkinlik.Ad));
+        ViewBag.Katilimcilar = new SelectList(katilimcilar, nameof(Katilimci.Id), nameof(Katilimci.Ad));
+        return View(nameof(Ekle), form);
+    }
+}</code></pre></div><h2 id="giris">Giriş ve çıkış</h2><p><code>PasswordSignInAsync</code> parolayı doğrular ve oturum çerezi oluşturur. Başarısız denemelerde hesap kilidi uygulanır. Yönlendirme adresi yerel adres olarak doğrulanır. Çıkış POST isteği ve doğrulama belirteciyle yapılır.</p><div class="code"><div class="code-head"><span>Controllers/HesapController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Etkinlikler.Controllers;
+
+public class HesapController(SignInManager&lt;IdentityUser&gt; giris) : Controller
+{
+    [HttpGet]
+    public IActionResult Giris(string? returnUrl) =&gt; View(new GirisFormu { ReturnUrl = returnUrl });
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Giris(GirisFormu form)
+    {
+        if (!ModelState.IsValid) return View(form);
+
+        var sonuc = await giris.PasswordSignInAsync(form.Eposta!, form.Parola!, false, lockoutOnFailure: true);
+        if (sonuc.Succeeded)
+        {
+            return LocalRedirect(Url.IsLocalUrl(form.ReturnUrl) ? form.ReturnUrl! : &quot;/&quot;);
+        }
+
+        ModelState.AddModelError(string.Empty, sonuc.IsLockedOut
+            ? &quot;Hesap geçici olarak kilitlendi.&quot;
+            : &quot;E-posta veya parola geçersiz.&quot;);
+        return View(form);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task&lt;IActionResult&gt; Cikis()
+    {
+        await giris.SignOutAsync();
+        return RedirectToAction(&quot;Index&quot;, &quot;Etkinlikler&quot;);
+    }
+
+    [HttpGet]
+    public IActionResult ErisimEngellendi() =&gt; View();
+}</code></pre></div><div class="code"><div class="code-head"><span>Views/Hesap/Giris.cshtml</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>@model GirisFormu
+&lt;!doctype html&gt;
+&lt;html lang=&quot;tr&quot;&gt;
+&lt;head&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;&lt;title&gt;Giriş yap&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;main&gt;
+    &lt;h1&gt;Giriş yap&lt;/h1&gt;
+    &lt;form asp-action=&quot;Giris&quot; method=&quot;post&quot;&gt;
+        &lt;div asp-validation-summary=&quot;ModelOnly&quot; role=&quot;alert&quot;&gt;&lt;/div&gt;
+        &lt;input asp-for=&quot;ReturnUrl&quot; type=&quot;hidden&quot; /&gt;
+        &lt;p&gt;&lt;label asp-for=&quot;Eposta&quot;&gt;E-posta&lt;/label&gt; &lt;input asp-for=&quot;Eposta&quot; autocomplete=&quot;username&quot; /&gt;&lt;span asp-validation-for=&quot;Eposta&quot;&gt;&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;label asp-for=&quot;Parola&quot;&gt;Parola&lt;/label&gt; &lt;input asp-for=&quot;Parola&quot; autocomplete=&quot;current-password&quot; /&gt;&lt;span asp-validation-for=&quot;Parola&quot;&gt;&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;button type=&quot;submit&quot;&gt;Giriş yap&lt;/button&gt;&lt;/p&gt;
+    &lt;/form&gt;
+&lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div><h2 id="kurulum">Veritabanını ve yöneticiyi hazırla</h2><p>Örnek ZIP’i aç, <code>Etkinlikler</code> klasörüne gir ve üçüncü dersteki SQL Server bağlantısını ayarla. Migration Identity tablolarını ekler. Geliştirme ortamında kendi e-posta ve güçlü parolanı User Secrets ile gir. Komut, kullanıcı yoksa oluşturur ve <code>Yonetici</code> rolünü atar. Mevcut kullanıcı varsa parolasını değiştirmez.</p><div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet restore
+dotnet tool restore
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update
+dotnet user-secrets set &quot;IlkYonetici:Eposta&quot; &quot;yonetici@example.com&quot;
+dotnet user-secrets set &quot;IlkYonetici:Parola&quot; &quot;KENDI_GUCLU_PAROLANIZ&quot;
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile -- --yonetici-olustur
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5085</code></pre></div><p>PowerShell’de önce <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> çalıştır ve komutlardan ortam değişkeni ön ekini çıkar. User Secrets geliştirme içindir. Sunucuda gizli değerleri güvenli yapılandırma üzerinden sağla.</p><div class="code"><div class="code-head"><span>Data/YoneticiKurulumu.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Microsoft.AspNetCore.Identity;
+
+namespace Etkinlikler.Data;
+
+public static class YoneticiKurulumu
+{
+    public static async Task CalistirAsync(IServiceProvider services, IConfiguration config)
+    {
+        var email = config[&quot;IlkYonetici:Eposta&quot;] ?? throw new InvalidOperationException(&quot;İlk yönetici e-postasını ayarlayın.&quot;);
+        var parola = config[&quot;IlkYonetici:Parola&quot;] ?? throw new InvalidOperationException(&quot;İlk yönetici parolasını ayarlayın.&quot;);
+        await using var scope = services.CreateAsyncScope();
+        var roller = scope.ServiceProvider.GetRequiredService&lt;RoleManager&lt;IdentityRole&gt;&gt;();
+        var kullanicilar = scope.ServiceProvider.GetRequiredService&lt;UserManager&lt;IdentityUser&gt;&gt;();
+
+        if (!await roller.RoleExistsAsync(&quot;Yonetici&quot;))
+        {
+            var rolSonucu = await roller.CreateAsync(new IdentityRole(&quot;Yonetici&quot;));
+            if (!rolSonucu.Succeeded) throw new InvalidOperationException(string.Join(&quot;, &quot;, rolSonucu.Errors.Select(e =&gt; e.Description)));
+        }
+
+        var kullanici = await kullanicilar.FindByEmailAsync(email);
+        if (kullanici is null)
+        {
+            kullanici = new IdentityUser { UserName = email, Email = email };
+            var sonuc = await kullanicilar.CreateAsync(kullanici, parola);
+            if (!sonuc.Succeeded) throw new InvalidOperationException(string.Join(&quot;, &quot;, sonuc.Errors.Select(e =&gt; e.Description)));
+        }
+
+        if (!await kullanicilar.IsInRoleAsync(kullanici, &quot;Yonetici&quot;))
+        {
+            var sonuc = await kullanicilar.AddToRoleAsync(kullanici, &quot;Yonetici&quot;);
+            if (!sonuc.Succeeded) throw new InvalidOperationException(string.Join(&quot;, &quot;, sonuc.Errors.Select(e =&gt; e.Description)));
+        }
+        Console.WriteLine(&quot;Yönetici hesabı ve rolü hazır.&quot;);
+    }
+}</code></pre></div><h2 id="dene">Giriş ve yetkiyi kontrol et</h2><p><code>http://localhost:5085/</code> adresinde etkinlik listesi açılır. Oturum açmadan <code>/Etkinlikler/Ekle</code> veya <code>/Kayitlar/Ekle</code> adresine gitmek giriş ekranına yönlendirir. Yönetici hesabıyla giriş yaptıktan sonra yönetim bağlantıları açılır. Çıkış yaptıktan sonra aynı adresler yeniden giriş ister.</p><p>Rolü olmayan bir hesapla oturum açıldığında yönetim ekranı erişim engellendi sayfasına yönlendirir. Bu kontrol için veritabanında ayrı bir kullanıcı oluşturup bu kullanıcıya yönetici rolü atamadan deneyebilirsin.</p><a class="button secondary" href="/dersler/ef-core-transaction-kontenjan/">Önceki ders · Transaction ve kontenjan</a>
+<a class="button primary" href="/dersler/test-ve-yayin/">Sonraki ders · Test ve yayın</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#identity">Identity ve veritabanı</a><a href="#yapilandirma">Identity ve oturum yapılandırması</a><a href="#rol">Yönetim ekranlarını koru</a><a href="#giris">Giriş ve çıkış</a><a href="#kurulum">Veritabanını ve yöneticiyi hazırla</a><a href="#dene">Giriş ve yetkiyi kontrol et</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

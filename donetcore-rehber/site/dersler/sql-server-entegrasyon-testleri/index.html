@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="JWT, rol ve eşzamanlı kayıt işlemlerini SQL Server ile test et.">
+<title>SQL Server entegrasyon testleri · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/" aria-current="page"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>SQL Server</span></nav><h1>SQL Server entegrasyon testleri</h1><p class="lead">JWT, rol, doğrulama ve son kontenjan davranışını ayrı bir SQL Server test veritabanıyla sınayalım.</p><div class="lesson-meta"><span>.NET 10 ve SQL Server</span><span>Ders 17</span><span>Yaklaşık 45 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/ileri-tsql-ve-sorgu-planlari/">On altıncı ders</a>, .NET 10 SDK ve boş bir SQL Server test veritabanı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-17.zip" download>Örnek projeyi indir</a><h2 id="kapsam">Gerçek sağlayıcıyla neyi test ediyoruz?</h2><p>Test, ASP.NET Core test sunucusu ile gerçek SQL Server bağlantısını birleştirir. EF Core migration’larını uygular ve Identity kullanıcıları oluşturur. JWT üretimi, yönetici ve üye rolü, model doğrulaması ve etkinlik ekleme HTTP üzerinden sınanır.</p><p>Son yer senaryosunda iki ayrı kapsam ve DbContext aynı anda farklı katılımcılar için kayıt servisini çağırır. Bir başarı, bir dolu kontenjan sonucu ve veritabanında bir kayıt beklenir. Bu test servis katmanını çalıştırır. MVC formundan uçtan uca eşzamanlı istek testi değildir.</p><h2 id="veritabani">Ayrı test veritabanını hazırla</h2><p>SQL Server üzerinde bu test için yeni ve boş bir veritabanı oluştur. Bağlantıyı <code>ETKINLIK_TEST_SQL</code> ortam değişkeniyle ver. Test tablolar varsa çalışmayı durdurur. Migration ve test verileri test sonunda kalır. Yeniden çalıştırmak için başka bir boş test veritabanı kullan.</p><p>Bağlantıdaki kullanıcıya bu veritabanında migration uygulama ve veri yazma yetkisi ver. Parola içeren bağlantıyı güvenli ortam değişkeni yönetimiyle sağla. Bu bilgisayardaki bağlantı örneği kendinden imzalı sertifika kullanan yerel geliştirme sunucusu içindir.</p><div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>export ETKINLIK_TEST_SQL=&#x27;Server=SUNUCU;Database=AYRI_BOS_TEST_DB;User Id=KULLANICI;Password=PAROLA;Encrypt=True;TrustServerCertificate=True&#x27;
+dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj --filter FullyQualifiedName~SqlServerEntegrasyonTestleri</code></pre></div><p>PowerShell’de aynı bağlantıyı <code>$env:ETKINLIK_TEST_SQL</code> ile ayarla. SQL Server container imajları Microsoft tarafından Linux x86-64 üzerinde desteklenir. Apple Silicon kullanıyorsan desteklenen uzak veya ayrı bir SQL Server’a bağlanabilirsin.</p><h2 id="test">Entegrasyon testi</h2><p><code>WebApplicationFactory</code> uygulamayı test sunucusunda başlatır. Veritabanı yapılandırması test bağlantısıyla değiştirilir. İstekler gerçek Identity ve JWT doğrulamasından geçer. <code>TaskCompletionSource</code> iki kayıt denemesini ortak başlangıç noktasında serbest bırakır. SQL Server zamanlaması değişebilir ve test tekrarlı çalıştırılarak gözlemlenebilir.</p><div class="code"><div class="code-head"><span>Etkinlikler.Tests/SqlServerEntegrasyonTestleri.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Security.Cryptography;
+using Etkinlikler.Data;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+
+namespace Etkinlikler.Tests;
+
+public class SqlServerEntegrasyonTestleri
+{
+    [Fact]
+    public async Task Jwt_roller_dogrulama_ve_son_yer()
+    {
+        var connection = Environment.GetEnvironmentVariable(&quot;ETKINLIK_TEST_SQL&quot;)
+            ?? throw new InvalidOperationException(&quot;ETKINLIK_TEST_SQL ile boş test veritabanının bağlantısını ayarlayın.&quot;);
+        var connectionBuilder = new SqlConnectionStringBuilder(connection);
+        if (string.IsNullOrWhiteSpace(connectionBuilder.InitialCatalog))
+            throw new InvalidOperationException(&quot;Bağlantıda ayrı bir test veritabanı belirtilmeli.&quot;);
+
+        // Önceden var olan tabloya veya veriye dokunulmaz.
+        await using (var sql = new SqlConnection(connection))
+        {
+            await sql.OpenAsync();
+            await using var check = sql.CreateCommand();
+            check.CommandText = &quot;SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped = 0&quot;;
+            if (Convert.ToInt32(await check.ExecuteScalarAsync()) != 0)
+                throw new InvalidOperationException(&quot;Test için tablo içermeyen boş bir veritabanı seçin.&quot;);
+        }
+
+        var key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        await using var app = new WebApplicationFactory&lt;Program&gt;().WithWebHostBuilder(builder =&gt;
+        {
+            builder.UseEnvironment(&quot;Development&quot;);
+            builder.ConfigureAppConfiguration((_, config) =&gt; config.AddInMemoryCollection(
+                new Dictionary&lt;string, string?&gt;
+                {
+                    [&quot;ConnectionStrings:EtkinlikDb&quot;] = connection,
+                    [&quot;Jwt:Key&quot;] = key,
+                    [&quot;Jwt:Issuer&quot;] = &quot;entegrasyon&quot;,
+                    [&quot;Jwt:Audience&quot;] = &quot;etkinlik-test&quot;
+                }));
+        });
+
+        int etkinlikId;
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService&lt;EtkinlikDbContext&gt;();
+            await db.Database.MigrateAsync();
+            var eventItem = new Etkinlik { Ad = &quot;Eşzamanlı test&quot;, Kontenjan = 1 };
+            db.Etkinlikler.Add(eventItem);
+            await db.SaveChangesAsync();
+            etkinlikId = eventItem.Id;
+
+            var roles = scope.ServiceProvider.GetRequiredService&lt;RoleManager&lt;IdentityRole&gt;&gt;();
+            var users = scope.ServiceProvider.GetRequiredService&lt;UserManager&lt;IdentityUser&gt;&gt;();
+            Assert.True((await roles.CreateAsync(new IdentityRole(&quot;Yonetici&quot;))).Succeeded);
+            var admin = new IdentityUser { UserName = &quot;admin@test.local&quot;, Email = &quot;admin@test.local&quot; };
+            var member = new IdentityUser { UserName = &quot;uye@test.local&quot;, Email = &quot;uye@test.local&quot; };
+            Assert.True((await users.CreateAsync(admin, &quot;Test!12345&quot;)).Succeeded);
+            Assert.True((await users.CreateAsync(member, &quot;Test!12345&quot;)).Succeeded);
+            Assert.True((await users.AddToRoleAsync(admin, &quot;Yonetici&quot;)).Succeeded);
+        }
+
+        using var client = app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        async Task&lt;string&gt; TokenAsync(string email)
+        {
+            using var response = await client.PostAsJsonAsync(&quot;/api/token&quot;, new { eposta = email, parola = &quot;Test!12345&quot; });
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            return (await response.Content.ReadFromJsonAsync&lt;TokenCevabi&gt;())!.AccessToken;
+        }
+
+        using (var anonymous = await client.PostAsJsonAsync(&quot;/api/etkinlikler&quot;, new { ad = &quot;Entegrasyon&quot;, kontenjan = 10 }))
+            Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(&quot;Bearer&quot;, &quot;gecersiz-token&quot;);
+        using (var invalidToken = await client.PostAsJsonAsync(&quot;/api/etkinlikler&quot;, new { ad = &quot;Entegrasyon&quot;, kontenjan = 10 }))
+            Assert.Equal(HttpStatusCode.Unauthorized, invalidToken.StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(&quot;Bearer&quot;, await TokenAsync(&quot;uye@test.local&quot;));
+        using (var forbidden = await client.PostAsJsonAsync(&quot;/api/etkinlikler&quot;, new { ad = &quot;Entegrasyon&quot;, kontenjan = 10 }))
+            Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(&quot;Bearer&quot;, await TokenAsync(&quot;admin@test.local&quot;));
+        using (var invalid = await client.PostAsJsonAsync(&quot;/api/etkinlikler&quot;, new { ad = &quot;AB&quot;, kontenjan = 0 }))
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        using (var created = await client.PostAsJsonAsync(&quot;/api/etkinlikler&quot;, new { ad = &quot;Entegrasyon&quot;, kontenjan = 10 }))
+            Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        async Task&lt;KayitSonucu&gt; KaydetAsync(int katilimci)
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            var service = scope.ServiceProvider.GetRequiredService&lt;EtkinlikKayitServisi&gt;();
+            await gate.Task.WaitAsync(timeout.Token);
+            return await service.KaydetAsync(etkinlikId, katilimci, timeout.Token);
+        }
+        var ilk = KaydetAsync(1);
+        var ikinci = KaydetAsync(2);
+        gate.SetResult();
+        var results = await Task.WhenAll(ilk, ikinci);
+        Assert.Equal(1, results.Count(r =&gt; r == KayitSonucu.Basarili));
+        Assert.Equal(1, results.Count(r =&gt; r == KayitSonucu.KontenjanDolu));
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService&lt;EtkinlikDbContext&gt;();
+            Assert.Equal(1, await db.EtkinlikKayitlari.CountAsync(k =&gt; k.EtkinlikId == etkinlikId));
+        }
+    }
+
+    private sealed record TokenCevabi(string AccessToken);
+}</code></pre></div><h2 id="servis">Kayıt sorgusu ve kilit</h2><p>On dördüncü derste eklenen <code>Aciklama</code> alanı, <code>FromSql</code> ile varlık yükleyen sorgunun seçtiği sütunlara da eklenmelidir. Bu örnekte eksik sütun düzeltildi. <code>UPDLOCK, HOLDLOCK</code> ile aynı etkinlik üzerindeki kayıt işlemleri transaction boyunca sıraya girer.</p><div class="code"><div class="code-head"><span>Data/EtkinlikKayitServisi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.Data;
+using Etkinlikler.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public enum KayitSonucu
+{
+    Basarili,
+    EtkinlikBulunamadi,
+    KatilimciBulunamadi,
+    ZatenKayitli,
+    KontenjanDolu
+}
+
+public sealed class EtkinlikKayitServisi(EtkinlikDbContext db)
+{
+    public async Task&lt;KayitSonucu&gt; KaydetAsync(
+        int etkinlikId, int katilimciId, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(
+            IsolationLevel.ReadCommitted, cancellationToken);
+
+        var etkinlik = await db.Etkinlikler
+            .FromSql($&quot;&quot;&quot;
+                SELECT Id, Ad, Kontenjan, Aciklama
+                FROM dbo.Etkinlikler WITH (UPDLOCK, HOLDLOCK)
+                WHERE Id = {etkinlikId}
+                &quot;&quot;&quot;)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (etkinlik is null)
+        {
+            return KayitSonucu.EtkinlikBulunamadi;
+        }
+
+        if (!await db.Set&lt;Katilimci&gt;().AnyAsync(k =&gt; k.Id == katilimciId, cancellationToken))
+        {
+            return KayitSonucu.KatilimciBulunamadi;
+        }
+
+        var kayitlar = db.EtkinlikKayitlari.Where(k =&gt; k.EtkinlikId == etkinlikId);
+        if (await kayitlar.AnyAsync(k =&gt; k.KatilimciId == katilimciId, cancellationToken))
+        {
+            return KayitSonucu.ZatenKayitli;
+        }
+
+        if (await kayitlar.CountAsync(cancellationToken) &gt;= etkinlik.Kontenjan)
+        {
+            return KayitSonucu.KontenjanDolu;
+        }
+
+        db.EtkinlikKayitlari.Add(new EtkinlikKaydi
+        {
+            EtkinlikId = etkinlikId,
+            KatilimciId = katilimciId
+        });
+
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return KayitSonucu.Basarili;
+    }
+}</code></pre></div><h2 id="sonuc">Test sonucunu yorumla</h2><p>Başarılı çalışmada anonim ve geçersiz token için 401, üye için 403, geçersiz giriş için 400 ve yönetici eklemesi için 201 doğrulanır. Son yer testinde iki sonuçtan biri <code>Basarili</code>, diğeri <code>KontenjanDolu</code> olmalı ve veritabanındaki kayıt sayısı 1 olmalıdır.</p><p>Bu ders hazırlanırken SQL Server bağlantısı bulunmadığından gerçek sunucu testi çalıştırılamadı. Proje derlendi ve önceki SQLite testleri geçti. Testin SQL Server sonucu kendi ortamında çalıştırıldığında belirlenir.</p><div class="code"><div class="code-head"><span>Diğer testler · SQL Server bağlantısı olmadan</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj --filter &#x27;FullyQualifiedName!~SqlServerEntegrasyonTestleri&#x27;</code></pre></div><p><a href="https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-10.0">Microsoft Learn · ASP.NET Core entegrasyon testleri</a></p><a class="button secondary" href="/dersler/ileri-tsql-ve-sorgu-planlari/">Önceki ders · İleri T-SQL</a> <a class="button primary" href="/dersler/yayin-ve-son-kontrol/">Sonraki ders · Yayın ve son kontrol</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#kapsam">Gerçek sağlayıcıyla neyi test ediyoruz?</a><a href="#veritabani">Ayrı test veritabanını hazırla</a><a href="#test">Entegrasyon testi</a><a href="#servis">Kayıt sorgusu ve kilit</a><a href="#sonuc">Test sonucunu yorumla</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

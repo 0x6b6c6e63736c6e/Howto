@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik doluluk raporunu LINQ ile yaz ve EF Core’un ürettiği SQL’i T-SQL sorgusuyla karşılaştır.">
+<title>EF Core ve LINQ ile doluluk raporu · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/" aria-current="page"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+<main id="icerik" class="content">
+<div class="lesson">
+<nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>EF Core</span></nav>
+<h1>EF Core ve LINQ ile doluluk raporu</h1>
+<p class="lead">Dördüncü dersteki doluluk raporunu LINQ ile yaz. EF Core’un ürettiği SQL’i, elle yazdığın T-SQL sorgusuyla karşılaştır.</p>
+<div class="lesson-meta"><span>.NET 10 ve EF Core 10</span><span>Ders 5</span><span>Yaklaşık 35 dakika</span></div>
+<div class="note"><strong>Ön koşul</strong><p><a href="/dersler/ef-core-sql-server/">Üçüncü dersteki SQL Server bağlantısı</a> ve <a href="/dersler/t-sql-temelleri/">dördüncü dersteki doluluk raporu</a>. Üretilen SQL’i incelemek için SQL Server bağlantısı gerekmez.</p></div>
+<a class="button secondary" href="/ornekler/etkinlikler-ders-05.zip" download>Örnek projeyi indir</a>
+<h2 id="hazirlik">Aynı örnek veriyi hazırla</h2>
+
+<p>Dördüncü derste kayıtlar geçici tablolardaydı. Bu örnek, aynı iki etkinlik ve üç kayıtla çalışır. <code>EtkinlikKayitlariniEkle</code> migration’ı, <code>Katilimcilar</code> ve <code>EtkinlikKayitlari</code> tablolarını oluşturup örnek kayıtları ekler. Mevcut <code>Etkinlikler</code> tablosu ve etkinlikler korunur. Üç kayıt, üçüncü dersteki <code>Id = 1</code> etkinliğine bağlanır.</p>
+<p>Örnek ZIP’i aç, <code>Etkinlikler</code> klasörüne gir ve üçüncü dersteki geliştirici veritabanı bağlantısını kullan. Yeni bir ders veritabanında iki migration da uygulanır. Veritabanında sonradan eklediğin etkinlikler raporda ayrıca görünür.</p>
+<div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet restore
+dotnet tool restore
+ASPNETCORE_ENVIRONMENT=Development dotnet ef database update</code></pre></div>
+<p>PowerShell kullanıyorsan önce <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> çalıştır. Ardından ortam değişkeni ön ekini kaldırarak komutu gir.</p>
+<h2 id="linq">Doluluk sorgusunu LINQ ile yaz</h2>
+
+<p><code>join … into</code> eşleşmeleri gruplar. Hemen ardından gelen <code>DefaultIfEmpty()</code>, kaydı olmayan etkinliği de sorguya dahil eder. Grup anahtarında etkinliğin kimliği yer alır. Böylece aynı adı taşıyan etkinlikler birleşmez.</p>
+<p>Sol birleştirmeden gelen katılımcı kimliği <code>NULL</code> olabilir. Bu yüzden LINQ grubunda kimliği nullable olarak alır ve yalnızca dolu kimlikleri sayarız. Sorgu önce grup anahtarını ve sayımı bir sonuç nesnesine aktarır. Kalan yer ve yüzde bu değerlerden hesaplanır. <code>100m</code>, yüzdeyi ondalıklı hesaplamamızı sağlar.</p>
+<div class="code"><div class="code-head"><span>Data/DolulukRaporu.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+
+namespace Etkinlikler.Data;
+
+public static class DolulukRaporu
+{
+    public static IQueryable&lt;EtkinlikDolulugu&gt; Sorgu(EtkinlikDbContext db)
+    {
+        var sayim =
+            from etkinlik in db.Etkinlikler
+            join kayit in db.EtkinlikKayitlari on etkinlik.Id equals kayit.EtkinlikId into kayitlar
+            from kayit in kayitlar.DefaultIfEmpty()
+            group (int?)kayit.KatilimciId by new { etkinlik.Id, etkinlik.Ad, etkinlik.Kontenjan } into etkinlikGrubu
+            select new
+            {
+                etkinlikGrubu.Key.Id,
+                etkinlikGrubu.Key.Ad,
+                etkinlikGrubu.Key.Kontenjan,
+                KayitSayisi = etkinlikGrubu.Count(katilimciId =&gt; katilimciId != null)
+            };
+
+        return sayim.OrderBy(satir =&gt; satir.Id)
+            .Select(satir =&gt; new EtkinlikDolulugu(
+                satir.Ad,
+                satir.Kontenjan,
+                satir.KayitSayisi,
+                satir.Kontenjan - satir.KayitSayisi,
+                Math.Round(100m * satir.KayitSayisi / satir.Kontenjan, 2)));
+    }
+}</code></pre></div>
+<p><code>Sorgu</code> bir <code>IQueryable</code> döndürür. SQL sorgusu, controller’daki <code>ToListAsync</code> çağrısında çalıştırılır. Razor view sonuçtaki yüzdeleri iki ondalık basamakla gösterir.</p>
+<h2 id="sql">EF Core’un ürettiği SQL’i incele</h2>
+
+<p><code>ToQueryString()</code> sorgunun SQL karşılığını incelemeye yarar. Örnekteki <code>--rapor-sql</code> seçeneği SQL Server’a bağlantı açmadan bu metni yazdırır.</p>
+<div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet run --no-launch-profile -- --rapor-sql</code></pre></div>
+<div class="code"><div class="code-head"><span>EF Core 10.0.12 · ToQueryString çıktısı</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>SELECT [e].[Ad], [e].[Kontenjan], COUNT(CASE
+    WHEN [e0].[KatilimciId] IS NOT NULL THEN 1
+END), [e].[Kontenjan] - COUNT(CASE
+    WHEN [e0].[KatilimciId] IS NOT NULL THEN 1
+END), ROUND((100.0 * CAST(COUNT(CASE
+    WHEN [e0].[KatilimciId] IS NOT NULL THEN 1
+END) AS decimal(18,2))) / CAST([e].[Kontenjan] AS decimal(18,2)), 2)
+FROM [Etkinlikler] AS [e]
+LEFT JOIN [EtkinlikKayitlari] AS [e0] ON [e].[Id] = [e0].[EtkinlikId]
+GROUP BY [e].[Id], [e].[Ad], [e].[Kontenjan]
+ORDER BY [e].[Id]</code></pre></div>
+<h2 id="karsilastir">Dördüncü dersteki T-SQL ile karşılaştır</h2>
+
+<div class="code"><div class="code-head"><span>Ders 4 · Elle yazılan T-SQL</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>SELECT
+    e.Ad AS Etkinlik,
+    e.Kontenjan,
+    COUNT(r.KatilimciId) AS KayitSayisi,
+    e.Kontenjan - COUNT(r.KatilimciId) AS KalanYer,
+    CAST(100.0 * COUNT(r.KatilimciId) / e.Kontenjan AS decimal(5, 2)) AS DolulukYuzdesi
+FROM dbo.Etkinlikler AS e
+LEFT JOIN #AtolyeKayitlar AS r ON e.Id = r.EtkinlikId
+GROUP BY e.Id, e.Ad, e.Kontenjan
+ORDER BY e.Id;</code></pre></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="T-SQL ve EF Core karşılaştırması"><table><thead><tr><th scope="col">İşlem</th><th scope="col">Elle yazılan T-SQL</th><th scope="col">EF Core çıktısı</th></tr></thead><tbody><tr><td>Kayıtsız etkinlikler</td><td><code>LEFT JOIN #AtolyeKayitlar</code></td><td><code>LEFT JOIN EtkinlikKayitlari</code></td></tr><tr><td>Etkinlik başına özet</td><td><code>GROUP BY</code> kimlik, ad ve kontenjan</td><td>Aynı üç alanla <code>GROUP BY</code></td></tr><tr><td>Kayıt sayısı</td><td><code>COUNT(r.KatilimciId)</code></td><td><code>COUNT(CASE WHEN ... IS NOT NULL THEN 1 END)</code></td></tr><tr><td>Yüzde</td><td><code>CAST(... AS decimal(5, 2))</code></td><td>Ondalıklı bölme ve <code>ROUND(..., 2)</code></td></tr></tbody></table></div>
+<p>Her iki sayım da eşleşmeyen satırı atlar. Yüzdeyi iki basamağa yuvarlarlar. Elle yazılan sorgu <code>decimal(5, 2)</code> türünü döndürür. EF Core sorgusundaki <code>ROUND</code> değeri yuvarlar ve görünüm iki basamaklı biçimi uygular. Aynı veriler üzerinde doğrudan karşılaştırmak için elle yazılan sorgudaki <code>#AtolyeKayitlar</code> adını <code>dbo.EtkinlikKayitlari</code> ile değiştir.</p>
+<h2 id="sonuc">Raporu çalıştır ve sonucu kontrol et</h2>
+
+<div class="code"><div class="code-head"><span>Terminal · Yerel örneği başlat</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5083</code></pre></div>
+<p><code>http://localhost:5083/Etkinlikler/Doluluk</code> adresini aç. Başlangıç verisinde iki sorgunun beklenen sonucu aşağıdaki gibi.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Beklenen doluluk raporu"><table><thead><tr><th scope="col">Etkinlik</th><th scope="col">Kontenjan</th><th scope="col">Kayıt</th><th scope="col">Kalan yer</th><th scope="col">Doluluk (%)</th></tr></thead><tbody><tr><td>Web Geliştirme Atölyesi</td><td>25</td><td>3</td><td>22</td><td>12,00</td></tr><tr><td>SQL Server Semineri</td><td>40</td><td>0</td><td>40</td><td>0,00</td></tr></tbody></table></div>
+<h2 id="alistirma">Alıştırma</h2>
+
+<p>LINQ sorgusunda <code>sayim</code> üzerinden yalnızca <code>KayitSayisi == 0</code> olan etkinlikleri filtrele. SQL’i yeniden üret ve koşulun sorgunun neresine yazıldığını incele. Başlangıç verisinde yalnızca SQL Server Semineri kalmalı.</p>
+<p><a href="https://learn.microsoft.com/en-us/ef/core/querying/complex-query-operators">Microsoft Learn · LINQ işlemlerinin SQL’e çevrilmesi</a> · <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.entityframeworkqueryableextensions.toquerystring?view=efcore-10.0">Microsoft Learn · ToQueryString</a></p>
+<a class="button secondary" href="/dersler/t-sql-temelleri/">Önceki ders · T-SQL temelleri</a>
+<a class="button primary" href="/dersler/ef-core-transaction-kontenjan/">Sonraki ders · Transaction ve kontenjan</a>
+</div></main>
+<aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#hazirlik">Aynı örnek veriyi hazırla</a><a href="#linq">Doluluk sorgusunu LINQ ile yaz</a><a href="#sql">EF Core’un ürettiği SQL’i incele</a><a href="#karsilastir">Dördüncü dersteki T-SQL ile karşılaştır</a><a href="#sonuc">Raporu çalıştır ve sonucu kontrol et</a><a href="#alistirma">Alıştırma</a></nav></aside>
+</div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

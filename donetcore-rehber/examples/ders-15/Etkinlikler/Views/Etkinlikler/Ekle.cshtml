@@ -1,0 +1,40 @@
+@model EtkinlikFormu
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Etkinlik ekle</title>
+    <style>
+        body { font: 1rem/1.5 system-ui, sans-serif; max-width: 34rem; margin: 2rem auto; padding: 0 1rem; }
+        label, input, .field-validation-error { display: block; }
+        input { box-sizing: border-box; width: 100%; padding: .5rem; font: inherit; }
+        .field-validation-error { color: #a42028; }
+        button { font: inherit; padding: .45rem .8rem; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Etkinlik ekle</h1>
+        <form asp-action="Ekle" method="post">
+            <p>
+                <label asp-for="Ad"></label>
+                <input asp-for="Ad" aria-describedby="ad-hata" />
+                <span id="ad-hata" asp-validation-for="Ad"></span>
+            </p>
+            <p>
+                <label asp-for="Aciklama"></label>
+                <input asp-for="Aciklama" aria-describedby="aciklama-hata" />
+                <span id="aciklama-hata" asp-validation-for="Aciklama"></span>
+            </p>
+            <p>
+                <label asp-for="Kontenjan"></label>
+                <input asp-for="Kontenjan" aria-describedby="kontenjan-hata" />
+                <span id="kontenjan-hata" asp-validation-for="Kontenjan"></span>
+            </p>
+            <p><button type="submit">Kaydet</button></p>
+        </form>
+        <p><a asp-action="Index">Listeye dön</a></p>
+    </main>
+</body>
+</html>

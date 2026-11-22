@@ -1,0 +1,19 @@
+@model IReadOnlyList<Etkinlik>
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Etkinlikler</title>
+</head>
+<body>
+    <h1>Etkinlikler</h1>
+    <p><a asp-action="Ekle">Etkinlik ekle</a> · <a asp-action="Doluluk">Doluluk raporu</a></p>
+    <ul>
+        @foreach (var etkinlik in Model)
+        {
+            <li>@etkinlik.Ad (@etkinlik.Kontenjan kişilik)</li>
+        }
+    </ul>
+</body>
+</html>

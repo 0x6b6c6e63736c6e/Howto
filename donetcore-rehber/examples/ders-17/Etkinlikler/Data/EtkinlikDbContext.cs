@@ -1,0 +1,48 @@
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public sealed class EtkinlikDbContext(DbContextOptions<EtkinlikDbContext> options)
+    : IdentityDbContext(options)
+{
+    public DbSet<Etkinlik> Etkinlikler => Set<Etkinlik>();
+
+    public DbSet<EtkinlikKaydi> EtkinlikKayitlari => Set<EtkinlikKaydi>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        var etkinlik = modelBuilder.Entity<Etkinlik>();
+
+        etkinlik.ToTable("Etkinlikler", table =>
+            table.HasCheckConstraint("CK_Etkinlikler_Kontenjan", "[Kontenjan] BETWEEN 1 AND 500"));
+
+        etkinlik.Property(item => item.Ad).HasMaxLength(80).IsRequired();
+
+        etkinlik.Property(item => item.Aciklama).HasMaxLength(150);
+
+        etkinlik.HasData(
+            new Etkinlik { Id = 1, Ad = "Web Geliştirme Atölyesi", Kontenjan = 25 },
+            new Etkinlik { Id = 2, Ad = "SQL Server Semineri", Kontenjan = 40 });
+
+        var katilimci = modelBuilder.Entity<Katilimci>();
+        katilimci.ToTable("Katilimcilar");
+        katilimci.Property(item => item.Ad).HasMaxLength(80).IsRequired();
+        katilimci.HasData(
+            new Katilimci { Id = 1, Ad = "Deniz Kaya" },
+            new Katilimci { Id = 2, Ad = "Ece Arslan" },
+            new Katilimci { Id = 3, Ad = "Mert Yılmaz" });
+
+        var kayit = modelBuilder.Entity<EtkinlikKaydi>();
+        kayit.ToTable("EtkinlikKayitlari");
+        kayit.HasKey(item => new { item.EtkinlikId, item.KatilimciId });
+        kayit.HasOne(item => item.Etkinlik).WithMany(item => item.Kayitlar).HasForeignKey(item => item.EtkinlikId);
+        kayit.HasOne(item => item.Katilimci).WithMany(item => item.Kayitlar).HasForeignKey(item => item.KatilimciId);
+        kayit.HasData(
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 1 },
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 2 },
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 3 });
+    }
+}

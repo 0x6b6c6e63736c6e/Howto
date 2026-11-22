@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik projesinde EF Core ilişkileri ve veri koruyan migration.">
+<title>EF Core ilişkiler ve migration · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/" aria-current="page"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>EF Core</span></nav><h1>EF Core ilişkileri ve migration</h1><p class="lead">Etkinlik ve katılımcı ilişkilerini incele. Mevcut kayıtları koruyarak açıklama alanını ekle.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 14</span><span>Yaklaşık 40 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/api-hata-yonetimi-loglama/">On üçüncü ders</a> ve SQL Server geliştirici veritabanı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-14.zip" download>Örnek projeyi indir</a><h2 id="iliskiler">Etkinlik ve katılımcı ilişkisi</h2><p>Bir etkinliğe birçok katılımcı, bir katılımcı da birçok etkinliğe kayıt olabilir. <code>EtkinlikKayitlari</code> ara tablosu iki tarafı birbirine bağlar. Her ara satır bir etkinliğe ve bir katılımcıya aittir. Böylece iki adet bire çok ilişki, birlikte çoktan çoğa kayıt ilişkisini oluşturur.</p><p><code>EtkinlikId</code> ve <code>KatilimciId</code> yabancı anahtardır. İkisinin oluşturduğu bileşik birincil anahtar, aynı katılımcının aynı etkinliğe iki kez kaydedilmesini engeller. Mevcut yabancı anahtarların cascade davranışı etkinlik silinince ilgili kayıtları da siler.</p><h2 id="model">Navigation özellikleri ve eşleme</h2><p>Koleksiyonlar bir etkinliğin veya katılımcının kayıtlarına erişmeyi sağlar. Ara kayıttaki navigation özellikleri ilgili etkinliğe ve katılımcıya ulaşır. <code>JsonIgnore</code>, API etkinlik yanıtında kayıtların döngü oluşturmasını önler.</p><div class="code"><div class="code-head"><span>Models/Etkinlik.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.Text.Json.Serialization;
+
+namespace Etkinlikler.Models;
+
+public sealed class Etkinlik
+{
+    public int Id { get; set; }
+    public string Ad { get; set; } = string.Empty;
+    public int Kontenjan { get; set; }
+    public string? Aciklama { get; set; }
+
+    [JsonIgnore]
+    public ICollection&lt;EtkinlikKaydi&gt; Kayitlar { get; set; } = new List&lt;EtkinlikKaydi&gt;();
+}</code></pre></div><div class="code"><div class="code-head"><span>Models/Katilimci.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>namespace Etkinlikler.Models;
+
+public sealed class Katilimci
+{
+    public int Id { get; set; }
+    public string Ad { get; set; } = string.Empty;
+    public ICollection&lt;EtkinlikKaydi&gt; Kayitlar { get; set; } = new List&lt;EtkinlikKaydi&gt;();
+}</code></pre></div><div class="code"><div class="code-head"><span>Models/EtkinlikKaydi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>namespace Etkinlikler.Models;
+
+public sealed class EtkinlikKaydi
+{
+    public int EtkinlikId { get; set; }
+    public int KatilimciId { get; set; }
+    public Etkinlik Etkinlik { get; set; } = null!;
+    public Katilimci Katilimci { get; set; } = null!;
+}</code></pre></div><div class="code"><div class="code-head"><span>Data/EtkinlikDbContext.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Data;
+
+public sealed class EtkinlikDbContext(DbContextOptions&lt;EtkinlikDbContext&gt; options)
+    : IdentityDbContext(options)
+{
+    public DbSet&lt;Etkinlik&gt; Etkinlikler =&gt; Set&lt;Etkinlik&gt;();
+
+    public DbSet&lt;EtkinlikKaydi&gt; EtkinlikKayitlari =&gt; Set&lt;EtkinlikKaydi&gt;();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        var etkinlik = modelBuilder.Entity&lt;Etkinlik&gt;();
+
+        etkinlik.ToTable(&quot;Etkinlikler&quot;, table =&gt;
+            table.HasCheckConstraint(&quot;CK_Etkinlikler_Kontenjan&quot;, &quot;[Kontenjan] BETWEEN 1 AND 500&quot;));
+
+        etkinlik.Property(item =&gt; item.Ad).HasMaxLength(80).IsRequired();
+
+        etkinlik.Property(item =&gt; item.Aciklama).HasMaxLength(150);
+
+        etkinlik.HasData(
+            new Etkinlik { Id = 1, Ad = &quot;Web Geliştirme Atölyesi&quot;, Kontenjan = 25 },
+            new Etkinlik { Id = 2, Ad = &quot;SQL Server Semineri&quot;, Kontenjan = 40 });
+
+        var katilimci = modelBuilder.Entity&lt;Katilimci&gt;();
+        katilimci.ToTable(&quot;Katilimcilar&quot;);
+        katilimci.Property(item =&gt; item.Ad).HasMaxLength(80).IsRequired();
+        katilimci.HasData(
+            new Katilimci { Id = 1, Ad = &quot;Deniz Kaya&quot; },
+            new Katilimci { Id = 2, Ad = &quot;Ece Arslan&quot; },
+            new Katilimci { Id = 3, Ad = &quot;Mert Yılmaz&quot; });
+
+        var kayit = modelBuilder.Entity&lt;EtkinlikKaydi&gt;();
+        kayit.ToTable(&quot;EtkinlikKayitlari&quot;);
+        kayit.HasKey(item =&gt; new { item.EtkinlikId, item.KatilimciId });
+        kayit.HasOne(item =&gt; item.Etkinlik).WithMany(item =&gt; item.Kayitlar).HasForeignKey(item =&gt; item.EtkinlikId);
+        kayit.HasOne(item =&gt; item.Katilimci).WithMany(item =&gt; item.Kayitlar).HasForeignKey(item =&gt; item.KatilimciId);
+        kayit.HasData(
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 1 },
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 2 },
+            new EtkinlikKaydi { EtkinlikId = 1, KatilimciId = 3 });
+    }
+}</code></pre></div><p>Yeni <code>Aciklama</code> alanı isteğe bağlı ve en fazla 150 karakterdir. Form ve API modeli aynı sınırı doğrular. <code>PUT</code> tüm formu günceller. Açıklama gönderilmezse açıklama alanı boşaltılır.</p><h2 id="sorgu">İlişkili kayıtları oku</h2><p><code>Include</code> kayıtları, <code>ThenInclude</code> her kaydın katılımcısını yükler. Aşağıdaki sorgu bir etkinliği ve katılımcı adlarını okur.</p><div class="code"><div class="code-head"><span>LINQ</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>var etkinlik = await db.Etkinlikler
+    .AsNoTracking()
+    .Include(e =&gt; e.Kayitlar)
+        .ThenInclude(k =&gt; k.Katilimci)
+    .SingleAsync(e =&gt; e.Id == 1);
+foreach (var kayit in etkinlik.Kayitlar)
+    Console.WriteLine(kayit.Katilimci.Ad);</code></pre></div><h2 id="migration">Açıklama alanını migration ile ekle</h2><p>Model değişikliğinden sonra EF Core eski snapshot ile modeli karşılaştırır. ZIP dosyasında <code>EtkinlikAciklamasi</code> migration’ı hazırdır. Kendi önceki ders kopyanda aynı model ve eşlemeleri yaptıysan migration’ı bir kez oluşturabilirsin.</p><div class="code"><div class="code-head"><span>Terminal · kendi kopyanda</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet ef migrations add EtkinlikAciklamasi
+dotnet ef migrations script IdentityEkle EtkinlikAciklamasi -o degisiklik.sql</code></pre></div><p>Oluşturulan migration’ı incele. EF’nin ürettiği başlangıç kayıtlarına yönelik gereksiz <code>UpdateData</code> adımları bu örnekte çıkarıldı. Yeni sütun nullable olduğu için eski satırlar <code>NULL</code> değerini alır. <code>Down</code> sütunu kaldırır ve açıklama verisini siler.</p><div class="code"><div class="code-head"><span>Migrations · EtkinlikAciklamasi.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Etkinlikler.Migrations
+{
+    /// &lt;inheritdoc /&gt;
+    public partial class EtkinlikAciklamasi : Migration
+    {
+        /// &lt;inheritdoc /&gt;
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn&lt;string&gt;(
+                name: &quot;Aciklama&quot;,
+                table: &quot;Etkinlikler&quot;,
+                type: &quot;nvarchar(150)&quot;,
+                maxLength: 150,
+                nullable: true);
+
+        }
+
+        /// &lt;inheritdoc /&gt;
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: &quot;Aciklama&quot;,
+                table: &quot;Etkinlikler&quot;);
+        }
+    }
+}</code></pre></div><p>Yedeklenmiş geliştirici veritabanında SQL’i inceledikten sonra migration’ı uygula. İlk üç migration’ın uygulandığı örnekte komut yalnızca eksik migration’ı çalıştırır.</p><div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet ef database update</code></pre></div><p>Önceki ve sonraki etkinlik ve kayıt sayılarını karşılaştır. Bu örneğin migration’ı mevcut satırları güncellemez veya silmez. Canlı veritabanına uygulamadan önce yedek alıp hedef ortamda ayrıca doğrula.</p><h2 id="dene">Çalıştır ve doğrula</h2><p>ZIP içindeki <code>Etkinlikler</code> klasöründe üçüncü ve on ikinci derslerdeki SQL Server ve JWT ayarlarını kullan. Önce <code>dotnet restore</code> ve <code>dotnet tool restore</code> çalıştır. Development ortamında <code>dotnet ef database update</code> ile migration’ları uygula. Uygulamayı çalıştırıp etkinlik ekleme formunda açıklama gir veya API POST gövdesine <code>aciklama</code> ekle.</p><div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5091</code></pre></div><p>PowerShell’de önce <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> çalıştır ve ön eki kaldır. API GET sonucunda yeni açıklama alanını ve önceki etkinlikleri kontrol et.</p><h2 id="test">Test ve alıştırma</h2><p>Örnek testleri SQLite üzerinde navigation özellikleriyle üç katılımcıyı okumayı ve açıklama kaydını kontrol eder. Migration SQL’i SQL Server sağlayıcısıyla üretilip incelenmiştir. SQL Server’da migration uygulama testi ayrıca yapılmalıdır.</p><div class="code"><div class="code-head"><span>Terminal · ZIP içindeki ders klasöründen</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj</code></pre></div><p>Alıştırma olarak bir katılımcının kayıtlarını <code>Include</code> ile yükle ve etkinlik adlarını göster. Sonra 151 karakterlik açıklamanın 400 doğrulama yanıtı verdiğini dene.</p><p><a href="https://learn.microsoft.com/en-us/ef/core/modeling/relationships/many-to-many">Microsoft Learn · Çoktan çoğa ilişkiler</a> · <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/managing">Microsoft Learn · Migration yönetimi</a></p><a class="button secondary" href="/dersler/api-hata-yonetimi-loglama/">Önceki ders · Hata yönetimi ve loglama</a> <a class="button primary" href="/dersler/ef-core-sorgu-performansi/">Sonraki ders · Sorgu performansı</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#iliskiler">Etkinlik ve katılımcı ilişkisi</a><a href="#model">Navigation özellikleri ve eşleme</a><a href="#sorgu">İlişkili kayıtları oku</a><a href="#migration">Açıklama alanını migration ile ekle</a><a href="#dene">Çalıştır ve doğrula</a><a href="#test">Test ve alıştırma</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

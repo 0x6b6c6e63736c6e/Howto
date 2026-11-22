@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik API’sinde PUT ve DELETE ile doğrulama ve yetkilendirme.">
+<title>Web API güncelleme ve silme · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/" aria-current="page"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>ASP.NET Core</span></nav><h1>Web API ile güncelleme ve silme</h1><p class="lead">Etkinlik API’sine yönetici yetkisiyle güncelleme ve silme işlemleri ekle.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 10</span><span>Yaklaşık 35 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/aspnet-core-web-api/">Dokuzuncu dersin API ve yönetici oturumu</a> ile SQL Server bağlantısı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-10.zip" download>Örnek projeyi indir</a><h2 id="adresler">Güncelleme ve silme adresleri</h2><p><code>PUT /api/etkinlikler/{id}</code> etkinlik adını ve kontenjanı birlikte günceller. <code>DELETE /api/etkinlikler/{id}</code> etkinliği siler. Her iki işlem yönetici rolü ve doğrulama belirteci gerektirir.</p><div class="table-wrap" tabindex="0"><table><thead><tr><th>Durum</th><th>Yanıt</th></tr></thead><tbody><tr><td>İşlem başarılı</td><td>204 No Content</td></tr><tr><td>Etkinlik bulunamadı</td><td>404 Not Found</td></tr><tr><td>Geçersiz form veya eksik belirteç</td><td>400 Bad Request</td></tr><tr><td>Oturum yok / yönetici rolü yok</td><td>401 / 403</td></tr><tr><td>Kontenjan kayıt sayısından az</td><td>409 Conflict</td></tr></tbody></table></div><h2 id="uygulama">Controller işlemlerini ekle</h2><p>Dokuzuncu dersin controller dosyasına aşağıdaki iki action’ı ekle. <code>[ApiController]</code> güncelleme modelindeki ad ve kontenjan kurallarını doğrular. PUT gövdesinde iki alan da zorunludur. Kayıt sayısını aşan bir kontenjan azaltma girişimi 409 döndürür.</p><div class="code"><div class="code-head"><span>EtkinliklerApiController.cs · yeni action’lar</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>[Authorize(Roles = &quot;Yonetici&quot;)]
+    [ValidateAntiForgeryToken]
+    [HttpPut(&quot;{id:int}&quot;)]
+    public async Task&lt;IActionResult&gt; Guncelle(
+        int id, [FromBody] EtkinlikFormu form, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var kilitlenen = await db.Etkinlikler.Where(e =&gt; e.Id == id)
+            .ExecuteUpdateAsync(set =&gt; set.SetProperty(e =&gt; e.Kontenjan, e =&gt; e.Kontenjan), cancellationToken);
+        if (kilitlenen == 0)
+            return NotFound();
+
+        var kayitSayisi = await db.EtkinlikKayitlari.CountAsync(k =&gt; k.EtkinlikId == id, cancellationToken);
+        if (form.Kontenjan!.Value &lt; kayitSayisi)
+            return Conflict(new { mesaj = &quot;Kontenjan mevcut kayıt sayısından az olamaz.&quot;, kayitSayisi });
+
+        var etkinlik = await db.Etkinlikler.SingleAsync(e =&gt; e.Id == id, cancellationToken);
+        etkinlik.Ad = form.Ad!;
+        etkinlik.Kontenjan = form.Kontenjan.Value;
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return NoContent();
+    }
+
+    [Authorize(Roles = &quot;Yonetici&quot;)]
+    [ValidateAntiForgeryToken]
+    [HttpDelete(&quot;{id:int}&quot;)]
+    public async Task&lt;IActionResult&gt; Sil(int id, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var kilitlenen = await db.Etkinlikler.Where(e =&gt; e.Id == id)
+            .ExecuteUpdateAsync(set =&gt; set.SetProperty(e =&gt; e.Kontenjan, e =&gt; e.Kontenjan), cancellationToken);
+        if (kilitlenen == 0)
+            return NotFound();
+
+        var etkinlik = await db.Etkinlikler.SingleAsync(e =&gt; e.Id == id, cancellationToken);
+        db.Etkinlikler.Remove(etkinlik);
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return NoContent();
+    }</code></pre></div><p>Transaction başındaki değişmeyen <code>UPDATE</code>, etkinlik satırında yazma kilidi alır. Altıncı dersteki kayıt servisi aynı satırda <code>UPDLOCK</code> aldığı için SQL Server’da bu işlemler sıraya girer. Kayıt sayısı kilit alındıktan sonra okunur ve değişiklik commit edilene kadar kilit tutulur. SQL Server tetikleyicileri varsa bu UPDATE onları da çalıştırabilir. Diğer yazma yolları da aynı kurala katılmalıdır.</p><p>Silme işleminde mevcut yabancı anahtarın <code>ON DELETE CASCADE</code> davranışı etkinliğe ait katılımcı kayıtlarını siler. Katılımcı kişileri korunur. Örneği denemek için ayrı bir geliştirici veritabanı kullan.</p><h2 id="istek">İstekleri dene</h2><p>Örnek projeyi açıp dokuzuncu dersteki bağlantı ve yönetici hesabıyla çalıştır. Tarayıcıda yönetici girişi yaptıktan sonra aynı sitedeki geliştirici konsolunda önce güncellemeyi dene. Kimliği kendi test etkinliğine göre değiştir.</p><div class="code"><div class="code-head"><span>Terminal · ZIP içindeki ders klasöründen</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --project Etkinlikler --no-launch-profile --urls http://localhost:5087</code></pre></div><div class="code"><div class="code-head"><span>Tarayıcı konsolu · PUT</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>const token = (await (await fetch(&quot;/api/etkinlikler/form-belirteci&quot;)).json()).token;
+const yanit = await fetch(&quot;/api/etkinlikler/2&quot;, {
+  method: &quot;PUT&quot;,
+  headers: { &quot;Content-Type&quot;: &quot;application/json&quot;, &quot;X-CSRF-TOKEN&quot;: token },
+  body: JSON.stringify({ ad: &quot;SQL Server Atölyesi&quot;, kontenjan: 50 })
+});
+console.log(yanit.status);</code></pre></div><p><code>GET /api/etkinlikler/2</code> ile güncel alanları kontrol et. Daha sonra yalnızca silinmesini istediğin test etkinliğinin kimliğiyle DELETE isteğini çalıştır.</p><div class="code"><div class="code-head"><span>Tarayıcı konsolu · DELETE</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>const token = (await (await fetch(&quot;/api/etkinlikler/form-belirteci&quot;)).json()).token;
+const yanit = await fetch(&quot;/api/etkinlikler/2&quot;, {
+  method: &quot;DELETE&quot;,
+  headers: { &quot;X-CSRF-TOKEN&quot;: token }
+});
+console.log(yanit.status);</code></pre></div><p>204 yanıtı gövde içermez. Sonraki GET isteği 404 döndürür. Silme, etkinliğin ilişkili kayıtlarını da kaldırır.</p><h2 id="test">Test ve alıştırma</h2><p>Örnek testleri SQLite üzerinde başarılı güncelleme ve silmeyi, 400, 401, 403, 404 ve 409 yanıtlarını, kayıtların silinip katılımcıların korunmasını denetler. Eşzamanlı kayıt ile güncellemenin SQL Server kilit davranışı ayrıca SQL Server üzerinde sınanmalıdır.</p><div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj</code></pre></div><p>Alıştırma olarak üç kayıtlı ilk etkinliğin kontenjanını 2’ye düşürmeyi dene. 409 yanıtındaki kayıt sayısını incele ve GET isteğiyle kontenjanın değişmediğini doğrula.</p><p><a href="https://learn.microsoft.com/en-us/ef/core/saving/cascade-delete">Microsoft Learn · İlişkili kayıtların silinmesi</a></p><a class="button secondary" href="/dersler/aspnet-core-web-api/">Önceki ders · ASP.NET Core Web API</a> <a class="button primary" href="/dersler/api-sayfalama-filtreleme/">Sonraki ders · API sayfalama ve filtreleme</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#adresler">Güncelleme ve silme adresleri</a><a href="#uygulama">Controller işlemlerini ekle</a><a href="#istek">İstekleri dene</a><a href="#test">Test ve alıştırma</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

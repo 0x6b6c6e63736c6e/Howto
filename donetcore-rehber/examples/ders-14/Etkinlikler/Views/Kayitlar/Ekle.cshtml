@@ -1,0 +1,33 @@
+@model KatilimciKayitFormu
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Katılımcı kaydet</title>
+</head>
+<body>
+    <main>
+        <h1>Katılımcı kaydet</h1>
+        <form asp-action="Ekle" method="post">
+            <div asp-validation-summary="ModelOnly" aria-live="polite"></div>
+            <p>
+                <label asp-for="EtkinlikId"></label>
+                <select asp-for="EtkinlikId" asp-items="ViewBag.Etkinlikler" aria-describedby="etkinlik-hata">
+                    <option value="">Etkinlik seçin</option>
+                </select>
+                <span asp-validation-for="EtkinlikId" id="etkinlik-hata"></span>
+            </p>
+            <p>
+                <label asp-for="KatilimciId"></label>
+                <select asp-for="KatilimciId" asp-items="ViewBag.Katilimcilar" aria-describedby="katilimci-hata">
+                    <option value="">Katılımcı seçin</option>
+                </select>
+                <span asp-validation-for="KatilimciId" id="katilimci-hata"></span>
+            </p>
+            <p><button type="submit">Kaydet</button></p>
+        </form>
+        <p><a asp-controller="Etkinlikler" asp-action="Doluluk">Doluluk raporuna dön</a></p>
+    </main>
+</body>
+</html>

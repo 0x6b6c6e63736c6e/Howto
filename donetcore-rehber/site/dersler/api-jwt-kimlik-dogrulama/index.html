@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik API’sinde JWT üretimi, doğrulama ve rol tabanlı yetkilendirme.">
+<title>JWT ve rol tabanlı yetkilendirme · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/" aria-current="page"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>ASP.NET Core</span></nav><h1>JWT ve rol tabanlı yetkilendirme</h1><p class="lead">Identity ile eğitim amaçlı token üret, Bearer doğrulamasını ve yönetici rolünü API’de uygula.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 12</span><span>Yaklaşık 45 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/api-sayfalama-filtreleme/">On birinci ders</a>, Identity yönetici hesabı ve SQL Server bağlantısı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-12.zip" download>Örnek projeyi indir</a><h2 id="akis">Token akışı</h2><p>İstemci geliştirme ortamında e-posta ve parolayı <code>POST /api/token</code> adresine gönderir. Identity parolayı doğrular. Örnek, kullanıcının rollerini içeren 15 dakikalık bir JWT üretir. İstemci sonraki istekte <code>Authorization: Bearer &lt;token&gt;</code> başlığını gönderir. API imzayı, veren kurumu, hedefi ve süreyi doğrular.</p><p>Bu token üreticisi eğitim ve yerel test içindir. Uygulama yalnızca Development ortamında token üretir. Gerçek yayın için OAuth 2.0 ve OpenID Connect destekleyen bir kimlik sağlayıcısı kullan.</p><h2 id="ayar">JWT doğrulamasını yapılandır</h2><p><code>JwtBearer</code> paketi eklenir. Identity’nin MVC çerez şeması korunur ve API işlemleri açıkça Bearer şemasını seçer. İmza anahtarını User Secrets üzerinden sağla. Örnekte anahtar en az 32 bayt olmalıdır. Issuer ve audience değerleri token üretimiyle doğrulama sırasında aynı olmalıdır.</p><div class="code"><div class="code-head"><span>Program.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+if (args is [&quot;--rapor-sql&quot;])
+{
+    // SQL üretmek için sağlayıcı gerekir. Bu bağlantı açılmaz.
+    var options = new DbContextOptionsBuilder&lt;EtkinlikDbContext&gt;()
+        .UseSqlServer(&quot;Server=localhost;Database=DotNetAtolyeEtkinlikler;Integrated Security=True;Encrypt=True&quot;)
+        .Options;
+    using var db = new EtkinlikDbContext(options);
+    Console.WriteLine(DolulukRaporu.Sorgu(db).ToQueryString());
+    return;
+}
+
+var yoneticiOlustur = args is [&quot;--yonetici-olustur&quot;];
+var kayitDeneyi = args is [&quot;--kayit-deneyi&quot;];
+var builder = WebApplication.CreateBuilder(kayitDeneyi || yoneticiOlustur ? [] : args);
+builder.Services.AddControllersWithViews();
+builder.Services.AddAntiforgery(options =&gt; options.HeaderName = &quot;X-CSRF-TOKEN&quot;);
+builder.Services.AddScoped&lt;EtkinlikKayitServisi&gt;();
+builder.Services.AddIdentity&lt;IdentityUser, IdentityRole&gt;()
+    .AddEntityFrameworkStores&lt;EtkinlikDbContext&gt;()
+    .AddDefaultTokenProviders();
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddOptions&lt;JwtBearerOptions&gt;(JwtBearerDefaults.AuthenticationScheme)
+    .Configure&lt;IConfiguration&gt;((options, config) =&gt;
+    {
+        var key = config[&quot;Jwt:Key&quot;] ?? throw new InvalidOperationException(&quot;Jwt:Key ayarını girin.&quot;);
+        if (Encoding.UTF8.GetByteCount(key) &lt; 32)
+            throw new InvalidOperationException(&quot;Jwt:Key en az 32 bayt olmalı.&quot;);
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = config[&quot;Jwt:Issuer&quot;] ?? throw new InvalidOperationException(&quot;Jwt:Issuer ayarını girin.&quot;),
+            ValidateAudience = true,
+            ValidAudience = config[&quot;Jwt:Audience&quot;] ?? throw new InvalidOperationException(&quot;Jwt:Audience ayarını girin.&quot;),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            ValidAlgorithms = [SecurityAlgorithms.HmacSha256]
+        };
+    });
+
+builder.Services.ConfigureApplicationCookie(options =&gt;
+{
+    options.LoginPath = &quot;/Hesap/Giris&quot;;
+    options.AccessDeniedPath = &quot;/Hesap/ErisimEngellendi&quot;;
+});
+
+builder.Services.AddDbContext&lt;EtkinlikDbContext&gt;((services, options) =&gt;
+{
+    var configuration = services.GetRequiredService&lt;IConfiguration&gt;();
+    var connection = configuration.GetConnectionString(&quot;EtkinlikDb&quot;)
+        ?? throw new InvalidOperationException(&quot;ConnectionStrings:EtkinlikDb ayarını girin.&quot;);
+    options.UseSqlServer(connection);
+});
+
+await using var app = builder.Build();
+
+if (yoneticiOlustur)
+{
+    await YoneticiKurulumu.CalistirAsync(app.Services, builder.Configuration);
+    return;
+}
+
+if (kayitDeneyi)
+{
+    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+    await KayitDeneyi.CalistirAsync(app.Services, timeout.Token);
+    return;
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.MapControllerRoute(
+    name: &quot;default&quot;,
+    pattern: &quot;{controller=Etkinlikler}/{action=Index}/{id?}&quot;);
+
+await app.RunAsync();
+
+public partial class Program { }</code></pre></div><h2 id="token">Identity ile token oluştur</h2><p><code>CheckPasswordSignInAsync</code> parola ve hesap kilidi kurallarını uygular. Rolleri Identity’den alıp token’a ekleriz. Yanıtta token ve bitiş zamanı bulunur. Token hassas bir kimlik bilgisidir. İstekleri HTTPS üzerinden gönder ve değeri kayıt dosyalarına yazdırma.</p><div class="code"><div class="code-head"><span>Controllers/Api/TokenController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+
+namespace Etkinlikler.Controllers.Api;
+
+public sealed class TokenIstegi
+{
+    [Required, EmailAddress]
+    public string? Eposta { get; set; }
+
+    [Required]
+    public string? Parola { get; set; }
+}
+
+[ApiController]
+[Route(&quot;api/token&quot;)]
+public class TokenController(
+    IWebHostEnvironment environment,
+    IConfiguration config,
+    UserManager&lt;IdentityUser&gt; users,
+    SignInManager&lt;IdentityUser&gt; signIn) : ControllerBase
+{
+    [HttpPost]
+    public async Task&lt;IActionResult&gt; Olustur(TokenIstegi istek)
+    {
+        if (!environment.IsDevelopment())
+            return NotFound();
+
+        var user = await users.FindByEmailAsync(istek.Eposta!);
+        if (user is null)
+            return Unauthorized();
+
+        var sonuc = await signIn.CheckPasswordSignInAsync(user, istek.Parola!, lockoutOnFailure: true);
+        if (!sonuc.Succeeded)
+            return Unauthorized();
+
+        var key = config[&quot;Jwt:Key&quot;] ?? throw new InvalidOperationException(&quot;Jwt:Key ayarını girin.&quot;);
+        if (Encoding.UTF8.GetByteCount(key) &lt; 32)
+            throw new InvalidOperationException(&quot;Jwt:Key en az 32 bayt olmalı.&quot;);
+
+        var roles = await users.GetRolesAsync(user);
+        var claims = new List&lt;Claim&gt; { new(JwtRegisteredClaimNames.Sub, user.Id) };
+        claims.AddRange(roles.Select(role =&gt; new Claim(ClaimTypes.Role, role)));
+        var expires = DateTime.UtcNow.AddMinutes(15);
+        var jwt = new JwtSecurityToken(
+            issuer: config[&quot;Jwt:Issuer&quot;] ?? throw new InvalidOperationException(&quot;Jwt:Issuer ayarını girin.&quot;),
+            audience: config[&quot;Jwt:Audience&quot;] ?? throw new InvalidOperationException(&quot;Jwt:Audience ayarını girin.&quot;),
+            claims: claims,
+            expires: expires,
+            signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256));
+        Response.Headers.CacheControl = &quot;no-store&quot;;
+        Response.Headers.Pragma = &quot;no-cache&quot;;
+        return Ok(new { accessToken = new JwtSecurityTokenHandler().WriteToken(jwt), expiresAtUtc = expires });
+    }
+}</code></pre></div><h2 id="yetki">API işlemlerini rolle koru</h2><p>Liste ve detay herkese açıktır. POST, PUT ve DELETE için Bearer token ve <code>Yonetici</code> rolü gerekir. Token yoksa veya geçersizse 401, geçerli token’ın rolü yeterli değilse 403 döner. JWT süresi dolana kadar içindeki rol bilgisi geçerlidir. Rol değişikliğinin mevcut token’a anında yansıması için ayrıca iptal veya merkezi doğrulama tasarımı gerekir.</p><div class="code"><div class="code-head"><span>Controllers/Api/EtkinliklerApiController.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using Etkinlikler.Data;
+using Etkinlikler.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Etkinlikler.Controllers.Api;
+
+[ApiController]
+[Route(&quot;api/etkinlikler&quot;)]
+public class EtkinliklerApiController(EtkinlikDbContext db) : ControllerBase
+{
+    [HttpGet]
+    public async Task&lt;IActionResult&gt; Listele([FromQuery] EtkinlikSorgusu istek, CancellationToken cancellationToken)
+    {
+        var sorgu = db.Etkinlikler.AsNoTracking().AsQueryable();
+        if (!string.IsNullOrWhiteSpace(istek.Arama))
+        {
+            var arama = istek.Arama.Trim();
+            sorgu = sorgu.Where(e =&gt; e.Ad.Contains(arama));
+        }
+        if (istek.EnAzKontenjan.HasValue)
+            sorgu = sorgu.Where(e =&gt; e.Kontenjan &gt;= istek.EnAzKontenjan.Value);
+
+        var toplam = await sorgu.CountAsync(cancellationToken);
+        var azalan = istek.Yon == &quot;azalan&quot;;
+        sorgu = istek.Sirala switch
+        {
+            &quot;ad&quot; when azalan =&gt; sorgu.OrderByDescending(e =&gt; e.Ad).ThenBy(e =&gt; e.Id),
+            &quot;ad&quot; =&gt; sorgu.OrderBy(e =&gt; e.Ad).ThenBy(e =&gt; e.Id),
+            &quot;kontenjan&quot; when azalan =&gt; sorgu.OrderByDescending(e =&gt; e.Kontenjan).ThenBy(e =&gt; e.Id),
+            &quot;kontenjan&quot; =&gt; sorgu.OrderBy(e =&gt; e.Kontenjan).ThenBy(e =&gt; e.Id),
+            _ when azalan =&gt; sorgu.OrderByDescending(e =&gt; e.Id),
+            _ =&gt; sorgu.OrderBy(e =&gt; e.Id)
+        };
+
+        var kayitlar = await sorgu.Skip((istek.Sayfa - 1) * istek.SayfaBoyutu)
+            .Take(istek.SayfaBoyutu).ToListAsync(cancellationToken);
+        return Ok(new { istek.Sayfa, istek.SayfaBoyutu, toplamKayit = toplam, kayitlar });
+    }
+
+    [HttpGet(&quot;{id:int}&quot;)]
+    public async Task&lt;ActionResult&lt;Etkinlik&gt;&gt; Getir(int id, CancellationToken cancellationToken)
+    {
+        var etkinlik = await db.Etkinlikler.AsNoTracking()
+            .SingleOrDefaultAsync(e =&gt; e.Id == id, cancellationToken);
+        return etkinlik is null ? NotFound() : Ok(etkinlik);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = &quot;Yonetici&quot;)]
+    [HttpPost]
+    public async Task&lt;ActionResult&lt;Etkinlik&gt;&gt; Ekle(
+        [FromBody] EtkinlikFormu form, CancellationToken cancellationToken)
+    {
+        var etkinlik = new Etkinlik { Ad = form.Ad!, Kontenjan = form.Kontenjan!.Value };
+        db.Etkinlikler.Add(etkinlik);
+        await db.SaveChangesAsync(cancellationToken);
+        return CreatedAtAction(nameof(Getir), new { id = etkinlik.Id }, etkinlik);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = &quot;Yonetici&quot;)]
+    [HttpPut(&quot;{id:int}&quot;)]
+    public async Task&lt;IActionResult&gt; Guncelle(
+        int id, [FromBody] EtkinlikFormu form, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var kilitlenen = await db.Etkinlikler.Where(e =&gt; e.Id == id)
+            .ExecuteUpdateAsync(set =&gt; set.SetProperty(e =&gt; e.Kontenjan, e =&gt; e.Kontenjan), cancellationToken);
+        if (kilitlenen == 0)
+            return NotFound();
+
+        var kayitSayisi = await db.EtkinlikKayitlari.CountAsync(k =&gt; k.EtkinlikId == id, cancellationToken);
+        if (form.Kontenjan!.Value &lt; kayitSayisi)
+            return Conflict(new { mesaj = &quot;Kontenjan mevcut kayıt sayısından az olamaz.&quot;, kayitSayisi });
+
+        var etkinlik = await db.Etkinlikler.SingleAsync(e =&gt; e.Id == id, cancellationToken);
+        etkinlik.Ad = form.Ad!;
+        etkinlik.Kontenjan = form.Kontenjan.Value;
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return NoContent();
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = &quot;Yonetici&quot;)]
+    [HttpDelete(&quot;{id:int}&quot;)]
+    public async Task&lt;IActionResult&gt; Sil(int id, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var kilitlenen = await db.Etkinlikler.Where(e =&gt; e.Id == id)
+            .ExecuteUpdateAsync(set =&gt; set.SetProperty(e =&gt; e.Kontenjan, e =&gt; e.Kontenjan), cancellationToken);
+        if (kilitlenen == 0)
+            return NotFound();
+
+        var etkinlik = await db.Etkinlikler.SingleAsync(e =&gt; e.Id == id, cancellationToken);
+        db.Etkinlikler.Remove(etkinlik);
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return NoContent();
+    }
+}</code></pre></div><p>Bu derste API yazma uçları yalnızca Bearer şemasını kabul eder. Önceki derslerdeki çerez ve <code>X-CSRF-TOKEN</code> ile API yazma örnekleri bu sürümde JWT ile güncellenmelidir. MVC ekranları Identity çerezini ve kendi form doğrulama belirteçlerini kullanmaya devam eder.</p><h2 id="dene">Yerelde dene</h2><p>ZIP içindeki <code>Etkinlikler</code> klasörüne gir. Yedinci dersteki veritabanı bağlantısı, migration ve yönetici hesabı hazır olmalı. Anahtar için aşağıdaki komut yeni bir rastgele değer üretir ve yerel User Secrets alanına yazar.</p><div class="code"><div class="code-head"><span>Terminal · macOS ve Linux</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet restore
+dotnet user-secrets set &#x27;Jwt:Key&#x27; &quot;$(openssl rand -base64 48)&quot;
+dotnet user-secrets set &#x27;Jwt:Issuer&#x27; &#x27;dotnet-atolye&#x27;
+dotnet user-secrets set &#x27;Jwt:Audience&#x27; &#x27;etkinlik-api&#x27;
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5089</code></pre></div><p>PowerShell’de anahtarı güvenli bir rastgele değerle oluşturup aynı User Secrets ayarlarını gir. Ortam için <code>$env:ASPNETCORE_ENVIRONMENT = "Development"</code> kullan. Yerel HTTP adresi yalnızca eğitim ortamı içindir.</p><div class="code"><div class="code-head"><span>Token isteği · örnek</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>curl -X POST &#x27;http://localhost:5089/api/token&#x27;   -H &#x27;Content-Type: application/json&#x27;   -d &#x27;{&quot;eposta&quot;:&quot;yonetici@example.com&quot;,&quot;parola&quot;:&quot;KENDI_PAROLANIZ&quot;}&#x27;</code></pre></div><p>Yanıttaki <code>accessToken</code> değerini istemcinin Authorization başlığına Bearer olarak ekle. Aşağıdaki yer tutucuyu kendi token’ınla değiştir. Komut satırı geçmişi bu tür değerleri saklayabileceğinden gerçek ortamlarda istemcinin güvenli gizli bilgi mekanizmasını kullan.</p><div class="code"><div class="code-head"><span>Yönetici isteği</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>curl -X POST &#x27;http://localhost:5089/api/etkinlikler&#x27;   -H &#x27;Authorization: Bearer TOKEN_DEGERI&#x27;   -H &#x27;Content-Type: application/json&#x27;   -d &#x27;{&quot;ad&quot;:&quot;JWT Atölyesi&quot;,&quot;kontenjan&quot;:30}&#x27;</code></pre></div><h2 id="test">Test ve alıştırma</h2><p>Örnek testleri geçici SQLite veritabanında gerçek Identity kullanıcıları oluşturur. Parola hatası, yönetici ve rolü olmayan kullanıcı, süresi dolmuş token, hatalı imza, issuer ve audience durumlarını doğrular. SQL Server üzerinde ayrıca entegrasyon testi gerekir.</p><div class="code"><div class="code-head"><span>Terminal · ZIP içindeki ders klasöründen</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj</code></pre></div><p>Alıştırma olarak yönetici olmayan bir kullanıcı için token al ve POST isteğinin 403 döndürdüğünü gözlemle. Daha sonra süresi dolan token ile isteği tekrar dene.</p><p><a href="https://learn.microsoft.com/en-us/aspnet/core/security/authentication/configure-jwt-bearer-authentication?view=aspnetcore-10.0">Microsoft Learn · JWT Bearer doğrulaması</a></p><a class="button secondary" href="/dersler/api-sayfalama-filtreleme/">Önceki ders · API sayfalama ve filtreleme</a> <a class="button primary" href="/dersler/api-hata-yonetimi-loglama/">Sonraki ders · Hata yönetimi ve loglama</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#akis">Token akışı</a><a href="#ayar">JWT doğrulamasını yapılandır</a><a href="#token">Identity ile token oluştur</a><a href="#yetki">API işlemlerini rolle koru</a><a href="#dene">Yerelde dene</a><a href="#test">Test ve alıştırma</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

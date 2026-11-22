@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Etkinlik API’sinde sayfalama, filtreleme ve sıralama.">
+<title>API sayfalama ve filtreleme · .NET Atölye</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="/site.css">
+<script src="/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#icerik">İçeriğe geç</a>
+<header class="top"><div class="top-inner">
+<button class="icon menu-button" type="button" aria-label="Müfredat menüsü" aria-expanded="false" aria-controls="sidebar">☰</button>
+<a class="brand" href="/"><span aria-hidden="true">⌘</span> .NET Atölye</a>
+<nav class="top-links" aria-label="Üst menü"><a href="/#mufredat">Müfredat</a><a href="/dersler/mvc5ten-corea/">İlk ders</a></nav>
+<button class="icon theme" type="button" aria-label="Açık temaya geç">☼</button>
+</div></header>
+<div class="shell">
+<nav id="sidebar" class="sidebar" aria-label="Müfredat"><section><h2>BAŞLANGIÇ</h2><a href="/" ><span aria-hidden="true">⌂</span>Eğitim rotası</a></section><section><h2>ASP.NET CORE</h2><a href="/dersler/mvc5ten-corea/"><span aria-hidden="true">◇</span>MVC 5’ten ASP.NET Core’a</a><a href="/dersler/mvc-temelleri/"><span aria-hidden="true">◇</span>MVC temelleri</a><a href="/#mufredat" ><span aria-hidden="true">◇</span>İleri ASP.NET Core</a><a href="/dersler/identity-ve-yetkilendirme/"><span aria-hidden="true">◇</span>Identity ve yetkilendirme</a><a href="/dersler/test-ve-yayin/"><span aria-hidden="true">◇</span>Test ve yayın hazırlığı</a><a href="/dersler/aspnet-core-web-api/"><span aria-hidden="true">◇</span>ASP.NET Core Web API</a><a href="/dersler/web-api-guncelle-sil/"><span aria-hidden="true">◇</span>API güncelleme ve silme</a><a href="/dersler/api-sayfalama-filtreleme/" aria-current="page"><span aria-hidden="true">◇</span>API sayfalama ve filtreleme</a><a href="/dersler/api-jwt-kimlik-dogrulama/"><span aria-hidden="true">◇</span>API JWT ve roller</a><a href="/dersler/api-hata-yonetimi-loglama/"><span aria-hidden="true">◇</span>API hata yönetimi ve loglama</a><a href="/dersler/yayin-ve-son-kontrol/"><span aria-hidden="true">◇</span>Yayın ve son kontrol</a></section><section><h2>VERİ KATMANI</h2><a href="/dersler/ef-core-sql-server/" ><span aria-hidden="true">▤</span>Entity Framework Core</a><a href="/dersler/t-sql-temelleri/" ><span aria-hidden="true">▤</span>SQL Server ve T-SQL</a><a href="/dersler/ef-core-linq-raporlama/"><span aria-hidden="true">▤</span>EF Core ile doluluk raporu</a><a href="/dersler/ef-core-transaction-kontenjan/"><span aria-hidden="true">▤</span>Transaction ve kontenjan</a><a href="/dersler/ef-core-iliskiler-migration/"><span aria-hidden="true">▤</span>EF Core ilişkiler ve migration</a><a href="/dersler/ef-core-sorgu-performansi/"><span aria-hidden="true">▤</span>EF Core sorgu performansı</a><a href="/dersler/ileri-tsql-ve-sorgu-planlari/"><span aria-hidden="true">▤</span>İleri T-SQL ve sorgu planları</a><a href="/dersler/sql-server-entegrasyon-testleri/"><span aria-hidden="true">▤</span>SQL Server entegrasyon testleri</a></section><section><h2>KAYNAKLAR</h2><a href="/kaynaklar/"><span aria-hidden="true">↗</span>Kaynaklar</a></section></nav>
+
+
+
+
+
+<main id="icerik" class="content"><div class="lesson"><nav class="crumb" aria-label="Sayfa konumu"><a href="/">Eğitim rotası</a><span aria-hidden="true">/</span><span>ASP.NET Core</span></nav><h1>API sayfalama, filtreleme ve sıralama</h1><p class="lead">Etkinlikleri sorgu parametreleriyle filtrele, sırala ve sayfalar hâlinde getir.</p><div class="lesson-meta"><span>.NET 10</span><span>Ders 11</span><span>Yaklaşık 35 dakika</span></div><div class="note"><strong>Ön koşul</strong><p><a href="/dersler/web-api-guncelle-sil/">Onuncu dersin etkinlik API’si</a> ve SQL Server bağlantısı.</p></div><a class="button secondary" href="/ornekler/etkinlikler-ders-11.zip" download>Örnek projeyi indir</a><h2 id="parametreler">Sorgu parametreleri</h2><p><code>GET /api/etkinlikler</code> parametresiz çağrıldığında ilk 10 etkinliği kimliğe göre artan sıralar. <code>sayfa</code> 1’den başlar ve en fazla 1.000.000 olabilir. <code>sayfaBoyutu</code> 1–100 arasındadır. <code>arama</code> etkinlik adında metin arar, <code>enAzKontenjan</code> alt sınır uygular. <code>sirala</code> için <code>id</code>, <code>ad</code> veya <code>kontenjan</code>, <code>yon</code> için <code>artan</code> veya <code>azalan</code> seçilir.</p><p>Sayfa boş olsa da <code>toplamKayit</code> filtreyle eşleşen tüm etkinliklerin sayısını gösterir. İzin verilmeyen değerler ve sayıya çevrilemeyen parametreler 400 döndürür.</p><h2 id="model">Sorgu modelini oluştur</h2><p><code>[FromQuery]</code> adres parametrelerini modele bağlar. <code>[ApiController]</code> veri türü ve doğrulama hatalarında 400 yanıtı üretir. Arama için boş veya yalnızca boşluktan oluşan değer filtre uygulanmadan işlenir.</p><div class="code"><div class="code-head"><span>Models/EtkinlikSorgusu.cs</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>using System.ComponentModel.DataAnnotations;
+
+namespace Etkinlikler.Models;
+
+public sealed class EtkinlikSorgusu
+{
+    [Range(1, 1_000_000)]
+    public int Sayfa { get; set; } = 1;
+
+    [Range(1, 100)]
+    public int SayfaBoyutu { get; set; } = 10;
+
+    [StringLength(80)]
+    public string? Arama { get; set; }
+
+    [Range(1, 500)]
+    public int? EnAzKontenjan { get; set; }
+
+    [RegularExpression(&quot;^(id|ad|kontenjan)$&quot;, ErrorMessage = &quot;Sıralama id, ad veya kontenjan olmalı.&quot;)]
+    public string Sirala { get; set; } = &quot;id&quot;;
+
+    [RegularExpression(&quot;^(artan|azalan)$&quot;, ErrorMessage = &quot;Yön artan veya azalan olmalı.&quot;)]
+    public string Yon { get; set; } = &quot;artan&quot;;
+}</code></pre></div><h2 id="sorgu">Filtrele, sırala ve sayfala</h2><p>Filtreler önce uygulanır ve <code>CountAsync</code> toplam eşleşme sayısını alır. <code>OrderBy</code> ve <code>ThenBy</code> sıralamayı belirler. Ad veya kontenjan eşitse kimlik ikinci anahtar olur. <code>Skip</code> önceki sayfaların kayıtlarını geçer, <code>Take</code> yalnızca istenen sayfayı getirir.</p><div class="code"><div class="code-head"><span>EtkinliklerApiController.cs · Listele</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>[HttpGet]
+    public async Task&lt;IActionResult&gt; Listele([FromQuery] EtkinlikSorgusu istek, CancellationToken cancellationToken)
+    {
+        var sorgu = db.Etkinlikler.AsNoTracking().AsQueryable();
+        if (!string.IsNullOrWhiteSpace(istek.Arama))
+        {
+            var arama = istek.Arama.Trim();
+            sorgu = sorgu.Where(e =&gt; e.Ad.Contains(arama));
+        }
+        if (istek.EnAzKontenjan.HasValue)
+            sorgu = sorgu.Where(e =&gt; e.Kontenjan &gt;= istek.EnAzKontenjan.Value);
+
+        var toplam = await sorgu.CountAsync(cancellationToken);
+        var azalan = istek.Yon == &quot;azalan&quot;;
+        sorgu = istek.Sirala switch
+        {
+            &quot;ad&quot; when azalan =&gt; sorgu.OrderByDescending(e =&gt; e.Ad).ThenBy(e =&gt; e.Id),
+            &quot;ad&quot; =&gt; sorgu.OrderBy(e =&gt; e.Ad).ThenBy(e =&gt; e.Id),
+            &quot;kontenjan&quot; when azalan =&gt; sorgu.OrderByDescending(e =&gt; e.Kontenjan).ThenBy(e =&gt; e.Id),
+            &quot;kontenjan&quot; =&gt; sorgu.OrderBy(e =&gt; e.Kontenjan).ThenBy(e =&gt; e.Id),
+            _ when azalan =&gt; sorgu.OrderByDescending(e =&gt; e.Id),
+            _ =&gt; sorgu.OrderBy(e =&gt; e.Id)
+        };
+
+        var kayitlar = await sorgu.Skip((istek.Sayfa - 1) * istek.SayfaBoyutu)
+            .Take(istek.SayfaBoyutu).ToListAsync(cancellationToken);
+        return Ok(new { istek.Sayfa, istek.SayfaBoyutu, toplamKayit = toplam, kayitlar });
+    }</code></pre></div><p>Bu sorgu SQL Server’a çevrilir. Aramanın büyük-küçük harf ve Türkçe karakter eşleşmesi veritabanı collation ayarına bağlıdır. Toplam ve sayfa iki ayrı sorgudur. Aralarında veri değişirse anlık değerler farklılaşabilir. Offset sayfalama sırasında kayıt eklenmesi veya silinmesi sayfalar arasında kayma oluşturabilir.</p><h2 id="ornek">İstek ve yanıt örnekleri</h2><p>Örnek projeyi dokuzuncu dersteki SQL Server bağlantısıyla başlat. Yeni migration gerekmez.</p><div class="code"><div class="code-head"><span>Terminal · ZIP içindeki ders klasöründen</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>ASPNETCORE_ENVIRONMENT=Development dotnet run --project Etkinlikler --no-launch-profile --urls http://localhost:5088</code></pre></div><p>İstekleri terminalde çalıştır. URL içindeki <code>&amp;</code> karakterleri için adresi tırnak içinde tut.</p><div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>curl &#x27;http://localhost:5088/api/etkinlikler?sayfa=1&amp;sayfaBoyutu=1&#x27;
+curl &#x27;http://localhost:5088/api/etkinlikler?arama=SQL&amp;enAzKontenjan=30&#x27;
+curl &#x27;http://localhost:5088/api/etkinlikler?sirala=kontenjan&amp;yon=azalan&#x27;
+curl &#x27;http://localhost:5088/api/etkinlikler?sayfaBoyutu=101&#x27;</code></pre></div><p>İlk istek başlangıç verilerinde aşağıdaki yapıyı verir.</p><div class="code"><div class="code-head"><span>JSON</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>{
+  &quot;sayfa&quot;: 1,
+  &quot;sayfaBoyutu&quot;: 1,
+  &quot;toplamKayit&quot;: 2,
+  &quot;kayitlar&quot;: [
+    { &quot;id&quot;: 1, &quot;ad&quot;: &quot;Web Geliştirme Atölyesi&quot;, &quot;kontenjan&quot;: 25 }
+  ]
+}</code></pre></div><p>Önceki dersin liste yanıtı doğrudan bir JSON dizisiydi. Bu derste yanıt sayfa bilgileri ve <code>kayitlar</code> dizisini içeren nesnedir. Mevcut API istemcileri bu yeni yapıya göre güncellenmelidir.</p><h2 id="test">Test ve alıştırma</h2><p>Örnek testleri ilk ve sonraki sayfaları, boş sayfayı, filtreleri, azalan sıralamayı, eşit sıralama değerlerini ve geçersiz parametreleri SQLite üzerinde kontrol eder. SQL Server collation ve sorgu performansı ayrıca SQL Server ortamında ölçülmelidir.</p><div class="code"><div class="code-head"><span>Terminal</span><button type="button" class="copy">Kopyala</button></div><pre tabindex="0"><code>dotnet test Etkinlikler.Tests/Etkinlikler.Tests.csproj</code></pre></div><p>Alıştırma olarak adı SQL içeren etkinlikleri kontenjana göre azalan sırayla, sayfa boyutu 1 olacak şekilde listele. İlk ve ikinci sayfanın kimliklerini karşılaştır.</p><p><a href="https://learn.microsoft.com/en-us/ef/core/querying/pagination">Microsoft Learn · EF Core sayfalama</a></p><a class="button secondary" href="/dersler/web-api-guncelle-sil/">Önceki ders · API güncelleme ve silme</a> <a class="button primary" href="/dersler/api-jwt-kimlik-dogrulama/">Sonraki ders · JWT ve roller</a></div></main><aside class="toc"><nav aria-label="Bu sayfada"><h2>Bu sayfada</h2><a href="#parametreler">Sorgu parametreleri</a><a href="#model">Sorgu modelini oluştur</a><a href="#sorgu">Filtrele, sırala ve sayfala</a><a href="#ornek">İstek ve yanıt örnekleri</a><a href="#test">Test ve alıştırma</a></nav></aside></div>
+<footer><span>.NET Atölye</span> · ASP.NET Core, EF Core ve SQL Server</footer>
+</body>
+</html>

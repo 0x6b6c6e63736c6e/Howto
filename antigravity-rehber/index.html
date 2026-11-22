@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const s = localStorage.getItem("color-scheme");
+      if (s === "light" || s === "dark") {
+        document.querySelector('meta[name="color-scheme"]').content = s;
+      }
+    } catch {}
+  </script>
+  <title>Antigravity &amp; Antigravity IDE Verimlilik Rehberi</title>
+  <meta name="description" content="Google Antigravity ve Antigravity IDE'yi en verimli şekilde kullanmak için yüzey seçimi, IDE kısayolları, model stratejisi, slash komutları, özelleştirme ve sandbox güvenlik rehberi.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div id="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main-content">İçeriğe atla</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+            <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.35"/>
+            <ellipse cx="16" cy="16" rx="13" ry="5.5" transform="rotate(-28 16 16)" stroke="currentColor" stroke-width="1.75"/>
+            <circle cx="16" cy="16" r="3.4" fill="currentColor"/>
+            <circle cx="25.5" cy="10.5" r="2" fill="var(--color-teal)"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">Antigravity Rehberi</span>
+          <span class="brand-sub">IDE · App · CLI · Özelleştirme</span>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <button type="button" id="open-shortcuts-btn" class="btn-ghost" aria-haspopup="dialog">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>
+          </svg>
+          <span>Kısayollar</span>
+          <kbd aria-hidden="true">?</kbd>
+        </button>
+
+        <button type="button" id="theme-toggle" class="btn-ghost theme-toggle-btn">
+          <span class="theme-opt theme-opt-dark">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+            <span class="theme-label">Koyu Tema</span>
+            <span class="visually-hidden"> — Koyu temaya geç</span>
+          </span>
+          <span class="theme-opt theme-opt-light">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            </svg>
+            <span class="theme-label">Açık Tema</span>
+            <span class="visually-hidden"> — Açık temaya geç</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section id="top" class="hero">
+    <div class="hero-backdrop" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <div class="hero-eyebrow">
+        <span class="pill-badge">Verimlilik &amp; İş Akışı Kılavuzu</span>
+        <span class="hero-meta">Google Antigravity Ekosistemi</span>
+      </div>
+      <h1>Antigravity &amp; Antigravity IDE<br>Verimlilik Rehberi</h1>
+      <p class="hero-lead">
+        Google Antigravity ve Antigravity IDE'den maksimum verim almanın sırrı; doğru arayüzü doğru iş için seçmek,
+        <strong>Keşfet → Planla → Uygula → Doğrula</strong> döngüsünü oturtmak ve projenizi tek seferlik
+        özelleştirmelerle (<code>AGENTS.md</code>, Skills, Hooks, MCP) ajana öğretmektir.
+      </p>
+
+      <div class="telemetry-strip" aria-label="Önerilen mühendislik döngüsü">
+        <div class="telemetry-step">
+          <span class="step-num">01</span>
+          <span class="step-info"><strong>Keşfet</strong><small><code>@</code> ve okuma ile bağlam kur</small></span>
+        </div>
+        <span class="step-arrow" aria-hidden="true">→</span>
+        <div class="telemetry-step">
+          <span class="step-num">02</span>
+          <span class="step-info"><strong>Planla</strong><small><code>/plan</code> ile kapsamı netleştir</small></span>
+        </div>
+        <span class="step-arrow" aria-hidden="true">→</span>
+        <div class="telemetry-step">
+          <span class="step-num">03</span>
+          <span class="step-info"><strong>Uygula</strong><small><code>Tab</code>, <code>⌘+I</code> ve Orchestrator</small></span>
+        </div>
+        <span class="step-arrow" aria-hidden="true">→</span>
+        <div class="telemetry-step">
+          <span class="step-num">04</span>
+          <span class="step-info"><strong>Doğrula</strong><small>Test, typecheck &amp; <code>/browser</code></small></span>
+        </div>
+      </div>
+
+      <div class="hero-cta">
+        <a href="#bolum-8" class="btn-primary">5 Adımlık Kontrol Listesine Git</a>
+        <button type="button" class="btn-secondary" id="hero-shortcuts-btn">Kısayol Kartını Aç</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="container page-layout">
+    <aside class="toc-sidebar" aria-label="Bölüm navigasyonu">
+      <div class="toc-card">
+        <p class="toc-heading">İçindekiler</p>
+        <nav aria-label="İçindekiler">
+          <ol class="toc-list" id="toc-list">
+            <li><a href="#bolum-1" data-toc-target="bolum-1"><span class="toc-num">01</span>Doğru Yüzey Seçimi</a></li>
+            <li><a href="#bolum-2" data-toc-target="bolum-2"><span class="toc-num">02</span>IDE 3 Etkileşim Modu</a></li>
+            <li><a href="#bolum-3" data-toc-target="bolum-3"><span class="toc-num">03</span>Model Stratejisi</a></li>
+            <li><a href="#bolum-4" data-toc-target="bolum-4"><span class="toc-num">04</span>Slash Komutları (<code>/</code>)</a></li>
+            <li><a href="#bolum-5" data-toc-target="bolum-5"><span class="toc-num">05</span>Bağlam &amp; Doğrulama</a></li>
+            <li><a href="#bolum-6" data-toc-target="bolum-6"><span class="toc-num">06</span>Proje Özelleştirme</a></li>
+            <li><a href="#bolum-7" data-toc-target="bolum-7"><span class="toc-num">07</span>Güvenlik &amp; Sandbox</a></li>
+            <li><a href="#bolum-8" data-toc-target="bolum-8"><span class="toc-num">08</span>Başlangıç Kontrol Listesi</a></li>
+          </ol>
+        </nav>
+
+        <div class="toc-progress-box">
+          <div class="toc-progress-row">
+            <span>Kurulum İlerlemesi</span>
+            <strong id="sidebar-progress-text">0 / 5</strong>
+          </div>
+          <div class="toc-progress-bar-track" aria-hidden="true">
+            <div class="toc-progress-bar-fill" id="sidebar-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main id="main-content" class="content-column">
+
+      <!-- BÖLÜM 1 -->
+      <section id="bolum-1" class="guide-section" aria-labelledby="sec-1-title">
+        <div class="section-header">
+          <span class="section-num">01</span>
+          <div>
+            <h2 id="sec-1-title">Doğru Yüzeyi Doğru İş İçin Seçin</h2>
+            <p class="section-desc">Antigravity tek bir araç değil; aynı ajan motorunu ve özelleştirmeleri paylaşan bir platformdur.</p>
+          </div>
+        </div>
+
+        <div tabindex="0" role="region" aria-labelledby="surfaces-table-caption" class="table-wrapper">
+          <table class="data-table table-surfaces">
+            <caption id="surfaces-table-caption">Antigravity ürün yüzeyleri ve en verimli kullanım senaryoları</caption>
+            <thead>
+              <tr>
+                <th scope="col">Yüzey</th>
+                <th scope="col">En Verimli Olduğu Senaryo</th>
+                <th scope="col">Öne Çıkan Avantaj</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">
+                  <span class="row-title">Antigravity IDE</span>
+                  <span class="row-sub">VS Code, JetBrains, Visual Studio, Eclipse, Xcode, Zed eklentileri</span>
+                </th>
+                <td>Aktif kod yazma, hızlı refactor, satır içi diff inceleme ve debug</td>
+                <td><strong>Supercomplete</strong>, <strong>Tab-to-Jump</strong>, <kbd>⌘</kbd>+<kbd>I</kbd> satır içi komutlar, editör içi yorum ve satır satır kabul/red</td>
+              </tr>
+              <tr>
+                <th scope="row">
+                  <span class="row-title">Antigravity App</span>
+                  <span class="row-sub">Masaüstü Komuta Merkezi (2.0+)</span>
+                </th>
+                <td>Paralel çalışan ajanlar, çoklu proje yönetimi, uzun arka plan işleri</td>
+                <td>Sıfır kurulumlu yerleşik tarayıcı otomasyonu, zamanlanmış görevler (<code>cron</code>), Artifact / Diff / Terminal yan paneli, ses modu</td>
+              </tr>
+              <tr>
+                <th scope="row">
+                  <span class="row-title">Antigravity CLI</span>
+                  <span class="row-sub">Terminal istemcisi (<code>agy</code>)</span>
+                </th>
+                <td>Terminal ağırlıklı akışlar, SSH / uzak sunucular, script &amp; CI/CD (<code>agy -p</code>)</td>
+                <td>Hafif, klavye öncelikli, headless otomasyon, <kbd>Esc</kbd> ile anında kesme ve <code>/rewind</code> ile geri sarma</td>
+              </tr>
+              <tr>
+                <th scope="row">
+                  <span class="row-title">Antigravity Python SDK</span>
+                  <span class="row-sub"><code>pip install google-antigravity</code></span>
+                </th>
+                <td>Özel otomasyon pipeline'ları ve programatik test / ajan akışları</td>
+                <td><code>Agent</code> asenkron bağlam yöneticisi ile düşünce/araç akışı ve özel araç (MCP) entegrasyonu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-teal">
+          <div class="callout-icon" aria-hidden="true">✦</div>
+          <div>
+            <strong>Altın Kombinasyon:</strong> Birebir kod geliştirirken <strong>Antigravity IDE</strong>'de kalın; paralel araştırma, çoklu-ajan görevleri veya sıfır kurulumlu görsel tarayıcı testleri için <strong>Antigravity App</strong>'i açın. Tüm yüzeyler projenizdeki <code>.agents/</code>, <code>AGENTS.md</code> ve <code>~/.gemini/config/</code> yapılandırmalarınızı otomatik paylaşır.
+          </div>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 2 -->
+      <section id="bolum-2" class="guide-section" aria-labelledby="sec-2-title">
+        <div class="section-header">
+          <span class="section-num">02</span>
+          <div>
+            <h2 id="sec-2-title">Antigravity IDE'de Maksimum Hız: 3 Etkileşim Modu</h2>
+            <p class="section-desc">Her işi sohbet panelinden istemek yerine görevin ölçeğine göre üç katmanlı etkileşimi kullanın.</p>
+          </div>
+        </div>
+
+        <div class="tabs-container" data-tabs-group="ide-modes">
+          <div class="tablist" role="tablist" focusgroup="tablist nomemory" aria-label="Antigravity IDE etkileşim modları">
+            <button type="button" role="tab" id="tab-passive" aria-selected="true" focusgroupstart>A. Pasif Mod (Tab)</button>
+            <button type="button" role="tab" id="tab-instructive" aria-selected="false">B. Yönlendirmeli Mod (⌘+I)</button>
+            <button type="button" role="tab" id="tab-collaborative" aria-selected="false">C. İşbirlikçi Mod (Agent &amp; Diff)</button>
+          </div>
+
+          <div class="tab-panels">
+            <div role="tabpanel" aria-labelledby="tab-passive" tabindex="0">
+              <div class="tab-panel-inner">
+                <div class="two-col-panel">
+                  <div>
+                    <h3>Kod yazarken akışı kesmeden hızlanın</h3>
+                    <ul class="feature-list">
+                      <li>
+                        <strong>Supercomplete:</strong> Yalnızca imlecin devamını değil, dosyanın farklı yerlerindeki ekleme/silmeleri ve eksik <code>import</code> satırlarını (<strong>Tab to Import</strong>) tek seferde önerir.
+                      </li>
+                      <li>
+                        <strong>Tab-to-Jump:</strong> Bir değişikliği kabul ettikten sonra düzenlemeniz gereken bir sonraki mantıksal satırı tahmin eder; tek <kbd>Tab</kbd> ile imleci oraya zıplatır.
+                      </li>
+                      <li>
+                        <strong>Hızlı Kontroller:</strong> Tümünü kabul <kbd>Tab</kbd>, iptal <kbd>Esc</kbd>, kelime kelime kabul <kbd>⌘</kbd>+<kbd>→</kbd> (macOS) / <kbd>Ctrl</kbd>+<kbd>→</kbd> (Windows/Linux).
+                      </li>
+                      <li>
+                        <strong>Hassas Ayar:</strong> Durum çubuğundaki <strong>Tab Settings</strong> üzerinden öneri hızını <code>Fast</code> (varsayılan, anlık) veya <code>Slow</code> (daha fazla bağlam bekleyen) olarak seçebilirsiniz.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="editor-mockup" aria-label="Supercomplete ve Tab-to-Jump görsel örneği">
+                    <div class="editor-mockup-bar">
+                      <span class="dot red"></span>
+                      <span class="dot amber"></span>
+                      <span class="dot green"></span>
+                      <span class="mockup-file">main.py — Supercomplete Önizleme</span>
+                    </div>
+                    <pre class="mockup-code"><code><span class="ln">1</span> <span class="kw">import</span> math_lib
+<span class="ln">2</span>
+<span class="ln">3</span> <span class="kw">def</span> <span class="fn">greet</span>(name: <span class="tp">str</span>, punctuation: <span class="tp">str</span> <span class="ghost-add">= "!"</span>):
+<span class="ln">4</span>     <span class="kw">return</span> <span class="str">f"Merhaba {name}</span><span class="ghost-del">!</span><span class="ghost-add">{punctuation}</span><span class="str">"</span>
+<span class="ln">5</span>
+<span class="ln">6</span> <span class="cm"># Sonraki düzenleme noktası tahmin edildi:</span>
+<span class="ln">7</span> val = <span class="del-inline">math</span><span class="ghost-add">math_lib</span>.e  <span class="jump-badge">⇥ Tab to Jump</span></code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div role="tabpanel" aria-labelledby="tab-instructive" hidden="until-found">
+              <div class="tab-panel-inner">
+                <h3>Tek dosyada dar kapsamlı, hedefli işlemler</h3>
+                <div class="card-grid-3">
+                  <div class="mini-card">
+                    <span class="mini-tag"><kbd>⌘</kbd>+<kbd>I</kbd> / <kbd>Ctrl</kbd>+<kbd>I</kbd></span>
+                    <h4>Satır İçi Komut (Inline)</h4>
+                    <p>Bir kod bloğunu seçip bastığınızda ajan <em>yalnızca seçili bloğa</em> odaklanır (refactor, tip ekleme, docstring üretimi). Seçim yoksa imleç konumunda yeni kod üretir.</p>
+                  </div>
+                  <div class="mini-card">
+                    <span class="mini-tag">Sembol Üstü Düğmeler</span>
+                    <h4>Inline Code Lenses</h4>
+                    <p>Fonksiyon ve sınıfların üzerinde otomatik beliren <strong>Refactor</strong>, <strong>Write Tests</strong> ve <strong>Explain Code</strong> aksiyonlarıyla prompt yazmadan komut verin.</p>
+                  </div>
+                  <div class="mini-card">
+                    <span class="mini-tag">Problems Paneli</span>
+                    <h4>Diagnostic Auto-Fix</h4>
+                    <p>Derleyici hataları veya linter uyarılarının üzerinden doğrudan ajanı tetikleyip hatayı bağlam içinde otomatik düzelttirin.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div role="tabpanel" aria-labelledby="tab-collaborative" hidden="until-found">
+              <div class="tab-panel-inner">
+                <h3>Çoklu dosya düzenlemeleri, PR tarzı inceleme ve tarayıcı testi</h3>
+                <div class="two-col-panel">
+                  <ul class="feature-list">
+                    <li>
+                      <strong>Satır İçi Diff Kontrolü:</strong> Ajan değişiklik yaptığında editörde yeşil/kırmızı vurgular görünür. Odaklanılan değişikliği kabul etmek için <kbd>Option</kbd>+<kbd>Enter</kbd> (<kbd>Alt</kbd>+<kbd>Enter</kbd>), reddetmek için <kbd>Option</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>) kullanın.
+                    </li>
+                    <li>
+                      <strong>Toplu İnceleme:</strong> Sohbet kutusunun üstündeki <em>X Files With Changes</em> çubuğundan <strong>Accept all / Reject all</strong> yapabilir, <strong>Review</strong> butonuyla değişen satırlara atlayabilirsiniz.
+                    </li>
+                    <li>
+                      <strong>Kod Üzerinden İnceleme Yorumu:</strong> Editörde veya artifact'te satırları seçip <kbd>⌘</kbd>+<kbd>Option</kbd>+<kbd>M</kbd> (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>M</kbd>) ya da kenar boşluğundaki <strong>+</strong> ikonuna tıklayın. Notunuzu <strong>Add Comment to Chat</strong> ile biriktirip tek seferde ajana gönderin.
+                    </li>
+                  </ul>
+
+                  <div class="callout callout-info">
+                    <div>
+                      <h4>IDE'de Tarayıcı Doğrulaması (<code>/browser</code>)</h4>
+                      <p>Antigravity IDE (v2.6.0+) ve VS Code eklentisi (v1.9.0+), yerel Google Chrome üzerinden sayfa kontrolü, konsol/ağ denetimi ve Lighthouse analizi yapabilir:</p>
+                      <ol class="compact-ol">
+                        <li><code>PATH</code> üzerinde Node.js (<code>npx</code>) kurulu olmalıdır.</li>
+                        <li>Aynı bilgisayarda Chrome 144+ içinde <code>chrome://inspect/#remote-debugging</code> sayfasından uzaktan hata ayıklamayı açın.</li>
+                        <li>Sohbette <code>/browser &lt;görev&gt;</code> çalıştırıp 60 sn içinde Chrome onayını verin.</li>
+                      </ol>
+                      <p class="note-sm"><em>Not:</em> Yalnızca yerel workspace'lerde çalışır (Remote-SSH/Dev Container hariç). Sıfır kurulumlu yerleşik yan-panel tarayıcısı <strong>Antigravity App</strong>'e özeldir.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 3 -->
+      <section id="bolum-3" class="guide-section" aria-labelledby="sec-3-title">
+        <div class="section-header">
+          <span class="section-num">03</span>
+          <div>
+            <h2 id="sec-3-title">Doğru Model Seçimi: Hız ve Zeka Dengesi</h2>
+            <p class="section-desc">Her görevde tek modelde ısrar etmek yerine işin karmaşıklığına göre model veya karma yönlendirme seçin.</p>
+          </div>
+        </div>
+
+        <div class="model-grid">
+          <article class="model-card model-card-featured">
+            <div class="model-card-head">
+              <span class="badge-recommended">Önerilen Varsayılan</span>
+              <span class="model-tier">Akıllı El Değiştirme</span>
+            </div>
+            <h3>Orchestrator</h3>
+            <p>Tek bir yanıt içinde planlama ve son incelemeyi üst düzey bir planlayıcı modelle, dosya uygulama adımlarını ise yüksek hızlı yürütücü modelle otomatik yürütür.</p>
+            <ul class="compact-list">
+              <li><strong>En uygunu:</strong> Günlük özellik geliştirme, hata düzeltme, refactor ve çoklu dosya debug</li>
+              <li><strong>Özelleştirme:</strong> <code>Settings &gt; Models &gt; Orchestrator Settings</code> (App) veya <code>/model</code> (CLI)</li>
+              <li><strong>Avantajı:</strong> Kaliteyi düşürmeden bekleme süresini ve maliyeti optimize eder</li>
+            </ul>
+          </article>
+
+          <article class="model-card">
+            <div class="model-card-head">
+              <span class="badge-neutral">Maksimum Derinlik</span>
+              <span class="model-tier">Tekil Üst Düzey</span>
+            </div>
+            <h3>Gemini 4 Neon / Carbon / Argon</h3>
+            <p>Planlayıcı ve yürütücü ayrımı olmadan her ara adımda en yüksek muhakeme gücünün gerektiği zorlu görevler için doğrudan seçin.</p>
+            <ul class="compact-list">
+              <li><strong>En uygunu:</strong> Dağıtık sistem tasarımı, ince concurrency / race condition hataları, çoklu repo migrasyonları</li>
+              <li><strong>Ek seçenek:</strong> Düşünme derinliğini görev bazında ayarlayabilirsiniz</li>
+            </ul>
+          </article>
+
+          <article class="model-card">
+            <div class="model-card-head">
+              <span class="badge-teal">Maksimum Hız</span>
+              <span class="model-tier">Hızlı Yürütme</span>
+            </div>
+            <h3>Gemini 4 Hydrogen</h3>
+            <p>Ayrı bir planlama fazına ihtiyaç duymayan, kapsamı net ve mekanik geliştirme işlerinde saniyeler içinde sonuç almak için idealdir.</p>
+            <ul class="compact-list">
+              <li><strong>En uygunu:</strong> Paket güncellemeleri, boilerplate üretimi, iyi tanımlı birim testleri, dokümantasyon ve küçük script'ler</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 4 -->
+      <section id="bolum-4" class="guide-section" aria-labelledby="sec-4-title">
+        <div class="section-header">
+          <span class="section-num">04</span>
+          <div>
+            <h2 id="sec-4-title">Slash Komutları (<code>/</code>) ile İş Akışınızı Otomatikleştirin</h2>
+            <p class="section-desc">Prompt kutusuna <code>/</code> yazarak özel ajan iş akışlarını tetikleyin. Aradığınız komutu filtreleyip tek tıkla kopyalayabilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="command-toolbar">
+          <div class="search-field-wrap">
+            <label for="cmd-search" class="visually-hidden">Slash komutu veya kullanım amacı ara</label>
+            <svg class="search-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input type="search" id="cmd-search" class="search-input" placeholder="Komut veya kullanım amacı ara (örn: plan, bug, test, geri al)...">
+          </div>
+
+          <div class="filter-pills" role="group" aria-label="Komut kategorisi filtresi">
+            <button type="button" class="filter-pill is-active" data-cmd-filter="all" aria-pressed="true">Tümü</button>
+            <button type="button" class="filter-pill" data-cmd-filter="planlama" aria-pressed="false">Planlama</button>
+            <button type="button" class="filter-pill" data-cmd-filter="coklu-ajan" aria-pressed="false">Derin &amp; Çoklu Ajan</button>
+            <button type="button" class="filter-pill" data-cmd-filter="baglam" aria-pressed="false">Bağlam &amp; Öğrenme</button>
+            <button type="button" class="filter-pill" data-cmd-filter="otomasyon" aria-pressed="false">Otomasyon &amp; CLI</button>
+          </div>
+        </div>
+
+        <p class="results-status" id="cmd-results-status" aria-live="polite">15 komut gösteriliyor</p>
+
+        <div tabindex="0" role="region" aria-labelledby="commands-table-caption" class="table-wrapper">
+          <table class="data-table table-commands" id="commands-table">
+            <caption id="commands-table-caption">Antigravity slash komutları ve CLI kısayol aksiyonları</caption>
+            <thead>
+              <tr>
+                <th scope="col">Komut</th>
+                <th scope="col">Kategori</th>
+                <th scope="col">Ne Zaman Kullanmalı?</th>
+                <th scope="col">İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-category="planlama" data-search="/plan planlama keşif implementation plan artifact orta büyük görev">
+                <th scope="row"><code>/plan</code></th>
+                <td><span class="cat-badge cat-plan">Planlama</span></td>
+                <td>Orta/büyük her görevde <strong>ilk adım</strong> olarak. Ajan kod yazmadan kod tabanını keşfeder, gerekirse soru sorar ve onayınıza sunulan bir <em>Implementation Plan</em> artifact'i üretir.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/plan ">Kopyala</button></td>
+              </tr>
+              <tr data-category="planlama" data-search="/grill-me mülakat soru tasarım karar belirsiz mimari">
+                <th scope="row"><code>/grill-me</code></th>
+                <td><span class="cat-badge cat-plan">Planlama</span></td>
+                <td>Fikriniz net ama teknik detaylar belirsizken. Ajan size hedefli sorular sorarak tasarım kararlarını baştan netleştirir.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/grill-me ">Kopyala</button></td>
+              </tr>
+              <tr data-category="coklu-ajan" data-search="/boost derin analiz race condition zor bug refactor doğrulama">
+                <th scope="row"><code>/boost</code></th>
+                <td><span class="cat-badge cat-deep">Derin &amp; Çoklu Ajan</span></td>
+                <td>Tek seferde çözülemeyen zor bug'lar, concurrency / race condition sorunları veya karmaşık refactor'lar için çok aşamalı derin analiz ve doğrulama hattı başlatır.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/boost ">Kopyala</button></td>
+              </tr>
+              <tr data-category="coklu-ajan" data-search="/goal uzun soluklu gece boyu hedef otonom bitir">
+                <th scope="row"><code>/goal</code></th>
+                <td><span class="cat-badge cat-deep">Derin &amp; Çoklu Ajan</span></td>
+                <td>Uzun soluklu (örn. gece boyu çalışacak) kapsamlı bir hedefte ajanın hedefe tamamen ulaşana kadar durmadan devam etmesini istediğinizde.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/goal ">Kopyala</button></td>
+              </tr>
+              <tr data-category="coklu-ajan" data-search="/teamwork ekip paralel çoklu ajan modül büyük proje">
+                <th scope="row"><code>/teamwork</code></th>
+                <td><span class="cat-badge cat-deep">Derin &amp; Çoklu Ajan</span></td>
+                <td>Birbirinden bağımsız modüllere veya kilometre taşlarına bölünebilen büyük projelerde uzmanlaşmış paralel ajan ekiplerini koordine etmek için.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/teamwork ">Kopyala</button></td>
+              </tr>
+              <tr data-category="coklu-ajan" data-search="/swarm sürü paralel mesaj panosu worker kota">
+                <th scope="row"><code>/swarm</code></th>
+                <td><span class="cat-badge cat-deep">Derin &amp; Çoklu Ajan</span></td>
+                <td>Ayrı dosya veya sorulara temiz bölünen işlerde ortak mesaj panosuyla paralel worker ajanlar çalıştırır. <strong>Uyarı:</strong> Her worker ayrı ajan olduğundan kota tüketimi daha yüksektir.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/swarm ">Kopyala</button></td>
+              </tr>
+              <tr data-category="baglam" data-search="/compact özetle bağlam temizle uzun sohbet pencere">
+                <th scope="row"><code>/compact</code></th>
+                <td><span class="cat-badge cat-ctx">Bağlam &amp; Öğrenme</span></td>
+                <td>Uzun bir sohbette keşif bittiğinde veya bir faz tamamlandığında bağlamı özetleyip pencereyi temizlemek için (örn. <code>/compact şimdi API testlerine geç</code>).</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/compact ">Kopyala</button></td>
+              </tr>
+              <tr data-category="baglam" data-search="/btw yan soru hızlı ana akışı bozma">
+                <th scope="row"><code>/btw</code></th>
+                <td><span class="cat-badge cat-ctx">Bağlam &amp; Öğrenme</span></td>
+                <td>Ana görev akışını ve konuşma odağını bozmadan hızlı bir yan soru sormak için.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/btw ">Kopyala</button></td>
+              </tr>
+              <tr data-category="baglam" data-search="/learn öğren kalıcı hata düzeltme skill kural">
+                <th scope="row"><code>/learn</code></th>
+                <td><span class="cat-badge cat-ctx">Bağlam &amp; Öğrenme</span></td>
+                <td>Ajanın yaptığı bir hatayı düzelttiğinizde veya zor bir ortam kurulumunu çözdüğünüzde, bunu sonraki oturumlar için kalıcı kural/skill haline getirmek için.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/learn ">Kopyala</button></td>
+              </tr>
+              <tr data-category="otomasyon" data-search="/browser tarayıcı web test ekran görüntüsü tıklama">
+                <th scope="row"><code>/browser</code></th>
+                <td><span class="cat-badge cat-auto">Otomasyon &amp; CLI</span></td>
+                <td>Canlı web sayfasında tıklama, form doldurma, ekran görüntüsü alma ve görsel doğrulama gerektiğinde.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/browser ">Kopyala</button></td>
+              </tr>
+              <tr data-category="otomasyon" data-search="/schedule zamanla cron tekrarlayan periyodik timer">
+                <th scope="row"><code>/schedule</code></th>
+                <td><span class="cat-badge cat-auto">Otomasyon &amp; CLI</span></td>
+                <td>Tek seferlik zamanlayıcı veya periyodik (<code>cron</code>) arka plan görevleri kurmak için.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/schedule ">Kopyala</button></td>
+              </tr>
+              <tr data-category="otomasyon" data-search="/rewind /undo geri al cli rollback hata">
+                <th scope="row"><code>/rewind</code> <small>(<code>/undo</code>)</small></th>
+                <td><span class="cat-badge cat-auto">Otomasyon &amp; CLI</span></td>
+                <td><strong>CLI Bonusu:</strong> Ajan birkaç adımda derleme hatası ürettiyse oturumu çöpe atmadan konuşmayı ve değişiklikleri önceki temiz noktaya geri sarar.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/rewind">Kopyala</button></td>
+              </tr>
+              <tr data-category="otomasyon" data-search="esc kes durdur cli yanlış yön">
+                <th scope="row"><kbd>Esc</kbd></th>
+                <td><span class="cat-badge cat-auto">Otomasyon &amp; CLI</span></td>
+                <td><strong>CLI Bonusu:</strong> Ajanın yanlış arama yaptığını veya yanlış yöne gittiğini gördüğünüz anda turu kesip temiz prompt'a dönmenizi sağlar.</td>
+                <td><span class="muted-dash">—</span></td>
+              </tr>
+              <tr data-category="otomasyon" data-search="/agents subagent cli izle durum">
+                <th scope="row"><code>/agents</code></th>
+                <td><span class="cat-badge cat-auto">Otomasyon &amp; CLI</span></td>
+                <td><strong>CLI Bonusu:</strong> Çalışan veya tamamlanmış alt ajanları (subagent) izlemek ve konuşma geçmişlerini açmak için.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/agents">Kopyala</button></td>
+              </tr>
+              <tr data-category="otomasyon" data-search="/usage kota limit cli kredi">
+                <th scope="row"><code>/usage</code></th>
+                <td><span class="cat-badge cat-auto">Otomasyon &amp; CLI</span></td>
+                <td><strong>CLI Bonusu:</strong> Aktif model kotalarını ve kullanım durumunu terminalden çıkmadan görüntülemek için.</td>
+                <td><button type="button" class="btn-copy-sm" data-copy="/usage">Kopyala</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="cmd-empty-state" class="empty-state" hidden>Eşleşen komut bulunamadı. Arama terimini temizleyip tekrar deneyin.</p>
+      </section>
+
+      <!-- BÖLÜM 5 -->
+      <section id="bolum-5" class="guide-section" aria-labelledby="sec-5-title">
+        <div class="section-header">
+          <span class="section-num">05</span>
+          <div>
+            <h2 id="sec-5-title">Yüksek Kaliteli Sonuç İçin Bağlam ve Doğrulama Taktikleri</h2>
+            <p class="section-desc">Ajanın hata oranını düşürmenin en hızlı yolu, ona hem net kanıt hem de otomatik doğrulama sinyali vermektir.</p>
+          </div>
+        </div>
+
+        <div class="tactic-grid">
+          <article class="tactic-card tactic-card-wide">
+            <div class="tactic-head">
+              <span class="tactic-tag">1 · En Yüksek Etki</span>
+              <h3>Önce Doğrulama Döngüsü Kurun</h3>
+            </div>
+            <p>Otonom ajanlar bir testi veya derleme komutunu kendileri çalıştırıp çıktıyı görerek düzeltebildiklerinde doğruluk oranı dramatik biçimde artar. Test yoksa önce test yazdırın, sonra implementasyona geçin.</p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Örnek Prompt Şablonu</span>
+                <button type="button" class="btn-copy-sm" data-copy="İndirim kuponu doğrulamasını ekle, ardından `npm test -- discounts` ve `npm run typecheck` çalıştırıp tüm hataları gider.">Kopyala</button>
+              </div>
+              <p class="prompt-text">“İndirim kuponu doğrulamasını ekle, ardından <code>npm test -- discounts</code> ve <code>npm run typecheck</code> çalıştırıp tüm hataları gider.”</p>
+            </div>
+          </article>
+
+          <article class="tactic-card">
+            <div class="tactic-head">
+              <span class="tactic-tag">2 · Hedefli Bağlam</span>
+              <h3><code>@</code> ile Ajanı Doğrudan Hedefe Yönlendirin</h3>
+            </div>
+            <p>Dosya veya klasör etiketlemek içeriği körü körüne prompt'a yapıştırmaz; ajana tam yolu iletir ve gereksiz proje taramasını önler:</p>
+            <ul class="kv-list">
+              <li><span>Dosya / Klasör</span><strong>Tam dosya yolu</strong> (gerektiğinde okur)</li>
+              <li><span>Satır Aralığı</span><strong>Yol + satır numaraları</strong></li>
+              <li><span>Kural (Rules)</span><strong>Kuralın tam metni</strong></li>
+              <li><span>Eski Sohbet</span><strong>Başlık + ID</strong> (transcript okunur)</li>
+              <li><span>Terminal Seçimi</span><strong>Son 8 KB çıktı + terminal adı</strong></li>
+            </ul>
+          </article>
+
+          <article class="tactic-card">
+            <div class="tactic-head">
+              <span class="tactic-tag">3 · Alıntı &amp; Görsel Kanıt</span>
+              <h3>Tarif Etmeyin, Gösterin</h3>
+            </div>
+            <ul class="compact-list">
+              <li><strong>Terminal / Kod Alıntısı:</strong> Entegre terminaldeki bir stack trace'i veya diff satırlarını seçip <strong>Quote</strong> ile mesaja ekleyin.</li>
+              <li><strong>Görsel Yapıştırma:</strong> UI, CSS veya yerleşim (layout) hatalarını paragraflarla tarif etmek yerine ekran görüntüsünü doğrudan sohbete yapıştırın (<kbd>⌘</kbd>+<kbd>V</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd>).</li>
+              <li><strong>Alt Ajana Direkt Mesaj:</strong> CLI'da <code>@research:...</code> yazarak veya App yan panelinden doğrudan bir alt ajana ek talimat verin.</li>
+            </ul>
+          </article>
+
+          <article class="tactic-card tactic-card-wide">
+            <div class="tactic-head">
+              <span class="tactic-tag">4 · Bağlam Hijyeni</span>
+              <h3>Sohbetleri Görev Bazlı ve Temiz Tutun</h3>
+            </div>
+            <p>Farklı bir özelliğe veya bağımsız bir hataya geçerken mutlaka <strong>yeni sohbet</strong> açın. Aynı görev uzadıysa keşif fazı biter bitmez <code>/compact</code> çalıştırın; gereksiz biriken eski araç çıktıları modelin dikkatini dağıtır ve token maliyetini artırır.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 6 -->
+      <section id="bolum-6" class="guide-section" aria-labelledby="sec-6-title">
+        <div class="section-header">
+          <span class="section-num">06</span>
+          <div>
+            <h2 id="sec-6-title">Projeyi Ajan İçin Özelleştirin (Bir Kez Kurun, Hep Kazanın)</h2>
+            <p class="section-desc">Antigravity proje kökündeki <code>.agents/</code> klasörünü ve dizin bazlı kuralları otomatik keşfeder; proje ayarları her zaman globalin önüne geçer.</p>
+          </div>
+        </div>
+
+        <section class="accordion" id="custom-accordion" aria-labelledby="custom-accordion-label">
+          <div class="accordion-toolbar">
+            <p id="custom-accordion-label" class="accordion-caption">5 Özelleştirme Katmanı — detayları açıp karşılaştırabilirsiniz</p>
+            <button type="button" class="btn-subtle" commandfor="custom-accordion" command="--toggle-all" aria-expanded="false">
+              <span class="expand">Tümünü Aç</span>
+              <span class="collapse">Tümünü Kapat</span>
+            </button>
+          </div>
+
+          <details open>
+            <summary>
+              <span class="summary-main">Rules — <code>AGENTS.md</code> / <code>GEMINI.md</code></span>
+              <span class="summary-badge">Her oturumda otomatik</span>
+            </summary>
+            <div class="details-body">
+              <p>Proje kökünde veya alt klasörlerde yer alır; ajan bir dosyayı açtığında bulunduğu dizinden repo köküne kadar yukarı doğru tüm kural dosyalarını hiyerarşik olarak birleştirip otomatik tekilleştirir.</p>
+              <ul class="compact-list">
+                <li><strong>İçerik önerisi:</strong> Build, test, lint komutları, mimari kurallar, yasaklı kütüphaneler ve hata işleme standartları.</li>
+                <li><strong>Bütçe limiti:</strong> Dosya başına <strong>24 KB (24.000 bayt)</strong>, toplam her zaman aktif kurallar için <strong>20.000 token</strong> bütçesi vardır; kısa, maddeli ve net tutun.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span class="summary-main">Skills — <code>.agents/skills/&lt;ad&gt;/SKILL.md</code></span>
+              <span class="summary-badge">İhtiyaç anında yüklenir</span>
+            </summary>
+            <div class="details-body">
+              <p><strong>Progressive disclosure</strong> (aşamalı yükleme) sayesinde yalnızca ilgili görevde bağlama dahil edilir; gereksiz token tüketmez.</p>
+              <ul class="compact-list">
+                <li><strong>Kritik alan:</strong> YAML frontmatter içindeki <code>name</code> ve üçüncü şahısla yazılmış net <code>description</code> alanı (ajan bu açıklamaya bakarak skill'i aktive eder).</li>
+                <li><strong>Klasör düzeni:</strong> Uzun dokümanları <code>references/</code> altına, tekrar eden karmaşık komut dizilerini <code>scripts/</code> altına koyup göreli bağlantıyla referans verin.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span class="summary-main">Hooks — <code>.agents/hooks.json</code></span>
+              <span class="summary-badge">Yaşam döngüsü otomasyonu</span>
+            </summary>
+            <div class="details-body">
+              <p>Ajan yürütme döngüsünün belirli anlarında senkron kabuk betikleri çalıştırır: <code>SessionStart</code>, <code>PreToolUse</code>, <code>PostToolUse</code>, <code>PreInvocation</code>, <code>PostInvocation</code>, <code>Stop</code>.</p>
+              <pre><code>{
+  "auto-lint": {
+    "PostToolUse": [{
+      "matcher": "edit_file|write_file",
+      "hooks": [{ "type": "command", "command": "./scripts/lint.sh", "timeout": 10 }]
+    }]
+  }
+}</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span class="summary-main">MCP Sunucuları — <code>~/.gemini/config/mcp_config.json</code></span>
+              <span class="summary-badge">Dış servis &amp; araçlar</span>
+            </summary>
+            <div class="details-body">
+              <p>Veritabanları, şirket içi dokümantasyon, issue tracker veya özel API'leri ajana araç olarak bağlar. <strong>Stdio</strong> (yerel komut) ve <strong>Streamable HTTP</strong> (<code>url</code>) aktarımını destekler.</p>
+              <p class="note-sm"><em>Not:</em> Eski HTTP+SSE aktarımı doğrudan desteklenmez; eski bir SSE sunucusu için Stdio üzerinden <code>mcp-remote</code> köprüsü kullanın.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span class="summary-main">Plugins &amp; Öncelik Sırası — <code>.agents/plugins/&lt;ad&gt;/plugin.json</code></span>
+              <span class="summary-badge">Ekip paylaşım paketi</span>
+            </summary>
+            <div class="details-body">
+              <p>Rules + Skills + Hooks + MCP sunucularını tek pakette toplayıp Git üzerinden ekibinizle paylaşmanızı sağlar. İsim çakışmalarında yükleme önceliği (yüksekten düşüğe):</p>
+              <ol class="compact-ol">
+                <li><strong>Workspace Projesi:</strong> CWD'den repo köküne hiyerarşik keşif (<code>.agents/</code>, <code>AGENTS.md</code>)</li>
+                <li><strong>Beyan Edilmiş Yapılandırmalar:</strong> <code>skills.json</code> veya <code>plugins.json</code></li>
+                <li><strong>Global Keşif:</strong> <code>~/.gemini/config/</code></li>
+                <li><strong>Yerleşik (Built-in)</strong> ve global JSON tanımları</li>
+              </ol>
+            </div>
+          </details>
+        </section>
+
+        <div class="template-studio">
+          <div class="studio-head">
+            <div>
+              <h3>Hazır <code>AGENTS.md</code> Başlangıç Şablonu Seçici</h3>
+              <p>Teknoloji yığınınızı seçin, şablonu kopyalayıp projenizin kök dizinine <code>AGENTS.md</code> olarak kaydedin.</p>
+            </div>
+          </div>
+
+          <div class="tabs-container" data-tabs-group="agents-presets">
+            <div class="tablist" role="tablist" focusgroup="tablist nomemory" aria-label="AGENTS.md teknoloji şablonları">
+              <button type="button" role="tab" id="preset-tab-genel" aria-selected="true" focusgroupstart>Genel / TypeScript</button>
+              <button type="button" role="tab" id="preset-tab-nextjs" aria-selected="false">Next.js</button>
+              <button type="button" role="tab" id="preset-tab-python" aria-selected="false">Python</button>
+              <button type="button" role="tab" id="preset-tab-flutter" aria-selected="false">Flutter</button>
+              <button type="button" role="tab" id="preset-tab-go" aria-selected="false">Go</button>
+            </div>
+
+            <div class="tab-panels">
+              <div role="tabpanel" aria-labelledby="preset-tab-genel" tabindex="0">
+                <div class="tab-panel-inner preset-panel-inner">
+                  <div class="code-toolbar">
+                    <span>AGENTS.md — Genel / Node &amp; TypeScript</span>
+                    <button type="button" class="btn-copy-code" data-copy-target="code-preset-genel">Şablonu Kopyala</button>
+                  </div>
+                  <pre id="code-preset-genel"><code># Proje Kuralları
+
+## Komutlar
+- Test: `pnpm test`
+- Tip kontrolü: `pnpm typecheck`
+- Lint: `pnpm lint`
+
+## Mimari &amp; Standartlar
+- Tüm API yanıtları `src/lib/result.ts` içindeki `Result&lt;T&gt;` tipini döndürmelidir.
+- Yeni bağımlılık eklemeden önce mevcut `package.json` paketlerini kontrol et.
+- Değişiklik sonrası ilgili birim testini ve `pnpm typecheck` komutunu mutlaka çalıştır.</code></pre>
+                </div>
+              </div>
+
+              <div role="tabpanel" aria-labelledby="preset-tab-nextjs" hidden="until-found">
+                <div class="tab-panel-inner preset-panel-inner">
+                  <div class="code-toolbar">
+                    <span>AGENTS.md — Next.js App Router</span>
+                    <button type="button" class="btn-copy-code" data-copy-target="code-preset-nextjs">Şablonu Kopyala</button>
+                  </div>
+                  <pre id="code-preset-nextjs"><code># Next.js Proje Kuralları
+
+## Doğrulama Komutları
+- Tip &amp; Lint: `pnpm typecheck &amp;&amp; pnpm lint`
+- Test: `pnpm test`
+- Build kontrolü: `pnpm build`
+
+## Mimari Kurallar
+- Sayfa ve layout dosyalarını varsayılan olarak Server Component tut; yalnızca gerçek tarayıcı etkileşiminde `"use client"` ekle.
+- Tüm harici API isteklerini ve form doğrulamalarını Zod şemalarıyla doğrula.
+- Değişiklik sonrası ilgili Playwright/Vitest testini ve `pnpm typecheck` komutunu çalıştır.</code></pre>
+                </div>
+              </div>
+
+              <div role="tabpanel" aria-labelledby="preset-tab-python" hidden="until-found">
+                <div class="tab-panel-inner preset-panel-inner">
+                  <div class="code-toolbar">
+                    <span>AGENTS.md — Python (uv / pytest / ruff)</span>
+                    <button type="button" class="btn-copy-code" data-copy-target="code-preset-python">Şablonu Kopyala</button>
+                  </div>
+                  <pre id="code-preset-python"><code># Python Proje Kuralları
+
+## Komutlar
+- Ortam &amp; Çalıştırma: `uv run pytest`
+- Lint &amp; Format: `uv run ruff check . &amp;&amp; uv run ruff format --check .`
+- Tip kontrolü: `uv run mypy src`
+
+## Standartlar
+- Global `pip install` kullanma; bağımlılıkları `uv add` ile `pyproject.toml` üzerinden yönet.
+- Tüm yeni fonksiyonlarda tam type annotation ve kısa docstring kullan.
+- Her hata düzeltmesi için `tests/` altında yeniden üretici bir birim testi ekle.</code></pre>
+                </div>
+              </div>
+
+              <div role="tabpanel" aria-labelledby="preset-tab-flutter" hidden="until-found">
+                <div class="tab-panel-inner preset-panel-inner">
+                  <div class="code-toolbar">
+                    <span>AGENTS.md — Flutter &amp; Dart</span>
+                    <button type="button" class="btn-copy-code" data-copy-target="code-preset-flutter">Şablonu Kopyala</button>
+                  </div>
+                  <pre id="code-preset-flutter"><code># Flutter Proje Kuralları
+
+## Komutlar
+- Statik analiz: `flutter analyze`
+- Testler: `flutter test`
+- Kod üretimi (varsa): `dart run build_runner build --delete-conflicting-outputs`
+
+## Standartlar
+- Widget'ları küçük ve tek sorumluluklu parçalara böl; mümkün olan her yerde `const` kurucu kullan.
+- UI metinlerini sabit yazma; yerelleştirme dosyaları (`l10n`) üzerinden oku.
+- Her düzenleme sonrası `flutter analyze` ve ilgili widget testlerini çalıştır.</code></pre>
+                </div>
+              </div>
+
+              <div role="tabpanel" aria-labelledby="preset-tab-go" hidden="until-found">
+                <div class="tab-panel-inner preset-panel-inner">
+                  <div class="code-toolbar">
+                    <span>AGENTS.md — Go</span>
+                    <button type="button" class="btn-copy-code" data-copy-target="code-preset-go">Şablonu Kopyala</button>
+                  </div>
+                  <pre id="code-preset-go"><code># Go Proje Kuralları
+
+## Komutlar
+- Test: `go test -race ./...`
+- Statik kontrol: `go vet ./...`
+- Format: `gofmt -l .`
+
+## Standartlar
+- Hataları yutma; anlamlı bağlamla `fmt.Errorf("...: %w", err)` kullanarak sarmala.
+- I/O ve ağ işlemlerinde ilk parametre olarak `context.Context` al.
+- Değişiklikten sonra mutlaka `go test -race ./...` ve `go vet ./...` çalıştır.</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="sr-feedback" id="copy-live-region" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 7 -->
+      <section id="bolum-7" class="guide-section" aria-labelledby="sec-7-title">
+        <div class="section-header">
+          <span class="section-num">07</span>
+          <div>
+            <h2 id="sec-7-title">Güvenlik ve Hız Dengesi: İzinler &amp; Terminal Sandbox</h2>
+            <p class="section-desc">Her komutta onay penceresi hızınızı keser; her izni sınırsız açmak ise risklidir. Doğru denge noktasını seçin.</p>
+          </div>
+        </div>
+
+        <div class="policy-spectrum" role="list" aria-label="Araç yürütme politikası seviyeleri">
+          <div class="policy-tier" role="listitem">
+            <span class="policy-name"><code>strict</code></span>
+            <span class="policy-label">Maksimum Denetim</span>
+            <p>Okuma dışındaki her yazma, komut ve ağ işleminde onay ister (<code>auto</code> modunu bile geçersiz kılar).</p>
+          </div>
+          <div class="policy-tier" role="listitem">
+            <span class="policy-name"><code>request-review</code></span>
+            <span class="policy-label">Varsayılan (Güvenli)</span>
+            <p>Dosya yazma, Bash komutları ve dış ağ çağrılarından önce kullanıcı onayı ister.</p>
+          </div>
+          <div class="policy-tier policy-tier-recommended" role="listitem">
+            <span class="policy-name"><code>proceed-in-sandbox</code> <span class="pill-mini">Önerilen</span></span>
+            <span class="policy-label">En Dengeli Hız &amp; Güvenlik</span>
+            <p>Terminal Sandbox içindeki güvenli komutlar kesintisiz çalışır; sandbox dışına taşan işlemler onayınıza sunulur.</p>
+          </div>
+          <div class="policy-tier" role="listitem">
+            <span class="policy-name"><code>always-proceed</code></span>
+            <span class="policy-label">Tam Otonom</span>
+            <p>Tüm araç çağrılarını onay beklemeden çalıştırır; yalnızca tamamen izole ortamlarda kullanın.</p>
+          </div>
+        </div>
+
+        <div class="two-col-panel security-bottom">
+          <div class="callout callout-neutral">
+            <div>
+              <h4>Allowlist / Denylist &amp; Proje Bazlı Kısıtlama</h4>
+              <ul class="compact-list">
+                <li><strong>İzin Listesi (Allowlist):</strong> Test, lint ve salt-okunur git/grep komutlarını otomatik izinli tanımlayın.</li>
+                <li><strong>Engel Listesi (Denylist):</strong> Üretim veritabanı bağlantıları, yıkıcı <code>rm</code> veya <code>deploy</code> komutlarını her zaman onay veya engel listesine alın.</li>
+                <li><strong>Proje Geçersiz Kılma:</strong> Hassas repolarda <strong>Project-Level Settings</strong> üzerinden yalnızca o proje için daha katı dosya/internet erişim politikası uygulayabilirsiniz.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="cli-config-box">
+            <div class="code-toolbar">
+              <span>~/.gemini/antigravity-cli/settings.json</span>
+              <button type="button" class="btn-copy-code" data-copy-target="code-cli-settings">Kopyala</button>
+            </div>
+            <pre id="code-cli-settings"><code>{
+  "toolPermission": "proceed-in-sandbox",
+  "enableTerminalSandbox": true
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 8 -->
+      <section id="bolum-8" class="guide-section" aria-labelledby="sec-8-title">
+        <div class="section-header">
+          <span class="section-num">08</span>
+          <div>
+            <h2 id="sec-8-title">Hemen Başlamak İçin 5 Adımlık Kontrol Listesi</h2>
+            <p class="section-desc">İlerlemeniz tarayıcınızda yerel olarak saklanır; işaretledikçe durumunuz güncellenir.</p>
+          </div>
+        </div>
+
+        <div class="checklist-card">
+          <div class="checklist-progress-header">
+            <div class="progress-meta">
+              <label for="onboarding-progress">Tamamlanma Durumu</label>
+              <strong id="checklist-status-text" aria-live="polite">0 / 5 adım tamamlandı</strong>
+            </div>
+            <div class="progress-controls">
+              <progress id="onboarding-progress" max="5" value="0">0%</progress>
+              <button type="button" id="reset-checklist-btn" class="btn-subtle-sm">Sıfırla</button>
+            </div>
+          </div>
+
+          <ul class="checklist-items">
+            <li>
+              <label class="check-item" for="check-step-1">
+                <input type="checkbox" id="check-step-1" class="checklist-input" data-step="1">
+                <span class="check-label"><strong>Modeli ayarlayın:</strong> Günlük geliştirmede <strong>Orchestrator</strong>'ı varsayılan yapın.</span>
+              </label>
+            </li>
+            <li>
+              <label class="check-item" for="check-step-2">
+                <input type="checkbox" id="check-step-2" class="checklist-input" data-step="2">
+                <span class="check-label"><strong>Sandbox'ı açın:</strong> <code>Terminal Sandbox</code> + <code>proceed-in-sandbox</code> (veya CLI'da <code>auto</code> modu) ile kesintisiz ve güvenli otomasyonu etkinleştirin.</span>
+              </label>
+            </li>
+            <li>
+              <label class="check-item" for="check-step-3">
+                <input type="checkbox" id="check-step-3" class="checklist-input" data-step="3">
+                <span class="check-label"><strong>Proje köküne <code>AGENTS.md</code> ekleyin:</strong> Test, lint, build komutlarını ve 5–10 kritik proje kuralını yazın.</span>
+              </label>
+            </li>
+            <li>
+              <label class="check-item" for="check-step-4">
+                <input type="checkbox" id="check-step-4" class="checklist-input" data-step="4">
+                <span class="check-label"><strong>İlk büyük işinizi <code>/plan</code> ile başlatın:</strong> Plan artifact'i üzerinde satır içi yorum yapıp onaylayarak ilerleyin.</span>
+              </label>
+            </li>
+            <li>
+              <label class="check-item" for="check-step-5">
+                <input type="checkbox" id="check-step-5" class="checklist-input" data-step="5">
+                <span class="check-label"><strong>Tekrar eden bir işinizi Skill yapın:</strong> Haftada birkaç kez aynı talimatı veriyorsanız <code>/learn</code> ile veya <code>.agents/skills/</code> altında kalıcı bir skill oluşturun.</span>
+              </label>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Resmi Kaynaklar &amp; Dokümantasyon</strong>
+        <p class="footer-note">Google Antigravity resmi dokümantasyon indeksinden derlenmiştir.</p>
+      </div>
+      <nav aria-label="Resmi dokümantasyon bağlantıları" class="footer-links">
+        <a href="https://antigravity.google/docs/overview" target="_blank" rel="noopener noreferrer">Genel Bakış</a>
+        <a href="https://antigravity.google/docs/getting-started" target="_blank" rel="noopener noreferrer">Başlangıç</a>
+        <a href="https://antigravity.google/docs/features" target="_blank" rel="noopener noreferrer">Özellikler</a>
+        <a href="https://antigravity.google/docs/cli/best-practices" target="_blank" rel="noopener noreferrer">CLI En İyi Pratikler</a>
+        <a href="https://antigravity.google/docs/changelog" target="_blank" rel="noopener noreferrer">Değişiklik Günlüğü</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Klavye Kısayolları Modalı (light-dismiss + fallback) -->
+  <dialog id="shortcuts-dialog" closedby="any" aria-labelledby="shortcuts-title">
+    <div class="dialog-surface">
+      <div class="dialog-header">
+        <div>
+          <h2 id="shortcuts-title">Antigravity Klavye Kısayolları</h2>
+          <p class="dialog-subtitle">Dışarı tıklayarak, <kbd>Esc</kbd> tuşuna basarak veya Kapat düğmesiyle kapatabilirsiniz.</p>
+        </div>
+        <form method="dialog">
+          <button type="submit" class="btn-close-dialog" aria-label="Kısayol penceresini kapat">✕</button>
+        </form>
+      </div>
+
+      <div class="dialog-body">
+        <table class="shortcuts-table">
+          <thead>
+            <tr>
+              <th scope="col">Aksiyon</th>
+              <th scope="col">macOS</th>
+              <th scope="col">Windows / Linux</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Supercomplete / Tab-to-Jump kabul et</th>
+              <td><kbd>Tab</kbd></td>
+              <td><kbd>Tab</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">Öneriyi kelime kelime kabul et</th>
+              <td><kbd>⌘</kbd>+<kbd>→</kbd></td>
+              <td><kbd>Ctrl</kbd>+<kbd>→</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">Satır içi komut (Inline Command)</th>
+              <td><kbd>⌘</kbd>+<kbd>I</kbd></td>
+              <td><kbd>Ctrl</kbd>+<kbd>I</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">Odaklanılan diff değişikliğini kabul et</th>
+              <td><kbd>Option</kbd>+<kbd>Enter</kbd></td>
+              <td><kbd>Alt</kbd>+<kbd>Enter</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">Odaklanılan diff değişikliğini reddet</th>
+              <td><kbd>Option</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></td>
+              <td><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">Seçili kod / artifact'e yorum ekle</th>
+              <td><kbd>⌘</kbd>+<kbd>Option</kbd>+<kbd>M</kbd></td>
+              <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>M</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">Sohbete ekran görüntüsü yapıştır</th>
+              <td><kbd>⌘</kbd>+<kbd>V</kbd></td>
+              <td><kbd>Ctrl</kbd>+<kbd>V</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">CLI: Yanlış giden ajan turunu durdur</th>
+              <td><kbd>Esc</kbd></td>
+              <td><kbd>Esc</kbd></td>
+            </tr>
+            <tr>
+              <th scope="row">CLI: Çıkış</th>
+              <td><kbd>Ctrl</kbd>+<kbd>D</kbd> ×2</td>
+              <td><kbd>Ctrl</kbd>+<kbd>D</kbd> ×2</td>
+            </tr>
+            <tr>
+              <th scope="row">Bu rehberde kısayol kartını aç</th>
+              <td><kbd>?</kbd></td>
+              <td><kbd>?</kbd></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="dialog-footer">
+        <form method="dialog">
+          <button type="submit" class="btn-primary">Kapat</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>
