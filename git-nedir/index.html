@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Git nedir, nasıl kurulur ve ilk commit nasıl alınır? İlk commit’ten dallara, birleştirmeye ve uzak depoya uzanan Türkçe Git rehberi.">
+  <meta name="theme-color" content="#faf8f5">
+  <title>Git Nedir? — İlk Commit Rehberi</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#icerik">İçeriğe geç</a>
+  <header class="site-header" id="ust">
+    <div class="wrap header-inner">
+      <a class="brand" href="#ust"><span class="brand-icon" aria-hidden="true">⌘</span> Git Rehberi</a>
+      <nav aria-label="Ana menü">
+        <a href="#mantik">Temeller</a>
+        <a href="#basla">İlk depo</a>
+        <a href="#dallar">Dallar</a>
+        <a href="#uzak-depo">Uzak depo</a>
+        <a href="#komutlar">Komutlar</a>
+      </nav>
+      <a class="header-action" href="#dene"><span aria-hidden="true">&gt;_</span> Git’i dene</a>
+    </div>
+  </header>
+  <main id="icerik">
+    <div class="hero-shell">
+      <section class="wrap hero" aria-labelledby="baslik">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> BAŞLANGIÇ REHBERİ</p>
+          <h1 id="baslik">Git nedir<span>?</span></h1>
+          <p class="hero-lead">Projenin değişiklik geçmişini kaydet.</p>
+          <p class="hero-description">Git, dosyalarındaki değişiklikleri kaydeden dağıtık bir sürüm kontrol sistemidir. Geçmişe bakabilir, ayrı bir dalda fikirlerini deneyebilir ve ekip arkadaşlarınla aynı proje üzerinde çalışabilirsin.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#basla">İlk deponu oluştur</a>
+            <a class="button secondary" href="#dene"><span aria-hidden="true">▷</span> Tarayıcıda dene</a>
+          </div>
+        </div>
+        <figure class="hero-figure">
+          <div class="hero-window">
+            <div class="window-bar">
+              <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+              <span>git-deneme</span>
+              <span class="window-lang">GIT</span>
+            </div>
+            <div class="hero-terminal">
+              <p><span class="prompt">$</span> git log --oneline --graph</p>
+              <ol class="history" aria-label="Örnek commit geçmişi">
+                <li><span class="history-node current" aria-hidden="true"></span><code>9d81c4a</code><span class="branch-label">main</span><span>Kurulum notlarını ekle</span></li>
+                <li><span class="history-node" aria-hidden="true"></span><code>42bc7e1</code><span>Proje yapısını hazırla</span></li>
+                <li><span class="history-node" aria-hidden="true"></span><code>f17e2a0</code><span>İlk commit</span></li>
+              </ol>
+            </div>
+          </div>
+          <figcaption>Örnek depo geçmişi <span aria-hidden="true">·</span> En yeni commit üstte</figcaption>
+        </figure>
+      </section>
+    </div>
+
+    <section class="wrap section concepts" id="mantik" aria-labelledby="mantik-baslik">
+      <p class="eyebrow">TEMELLER</p>
+      <h2 id="mantik-baslik">Bir değişiklik nasıl kaydedilir?</h2>
+      <p class="section-intro">Önce dosyanı düzenle, sonra kayda girecek sürümü seç ve bir mesajla commit oluştur.</p>
+      <div class="flow">
+        <article>
+          <span class="flow-icon" aria-hidden="true">01</span>
+          <h3>Çalışma klasörü</h3>
+          <p>Proje dosyalarının düzenlediğin hâli.</p>
+          <code>git status</code>
+        </article>
+        <article>
+          <span class="flow-icon" aria-hidden="true">02</span>
+          <h3>Hazırlık alanı</h3>
+          <p>Bir sonraki kayda girecek dosya sürümleri.</p>
+          <code>git add</code>
+        </article>
+        <article>
+          <span class="flow-icon" aria-hidden="true">03</span>
+          <h3>Depo geçmişi</h3>
+          <p>Commit’lerin, yani projenin kaydedilmiş sürümlerinin geçmişi.</p>
+          <code>git commit</code>
+        </article>
+      </div>
+      <div class="tip"><strong>Git ve GitHub arasındaki fark</strong><p>Git, bilgisayarında çalışan sürüm kontrol aracıdır. GitHub ise Git depolarını barındıran ve paylaşmanı sağlayan bir hizmettir. İlk commit için internete veya GitHub hesabına ihtiyacın yok.</p></div>
+    </section>
+
+    <section class="lesson-shell" id="basla" aria-labelledby="basla-baslik">
+      <div class="wrap section lesson">
+        <div class="lesson-heading">
+          <p class="eyebrow">ADIM ADIM</p>
+          <h2 id="basla-baslik">İlk deponu oluştur.</h2>
+          <p class="section-intro">Boş bir klasörden başla ve ilk commit’ini terminalde gör.</p>
+        </div>
+        <ol class="steps">
+          <li>
+            <div class="step-copy"><h3>Git’i kur ve kontrol et</h3>
+            <p>Sistemine uygun yükleyiciyi <a href="https://git-scm.com/install/">resmî Git sitesinden</a> edin. Windows’ta sonraki adımları Git Bash’te, macOS ve Linux’ta Terminal’de çalıştır.</p>
+            <p>Komut bir sürüm numarası gösterirse Git kullanıma hazırdır. Örnekler için Git 2.28 veya üzerini kullan.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git --version</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>Depoyu başlat ve kimliğini ayarla</h3>
+            <p>Yeni bir klasör oluştur ve ana dalı <code>main</code> olarak başlat. Adı ve e-posta adresini kendi bilgilerinle değiştir. Bu ayarlar yalnızca bu depoya uygulanır ve commit’lerinde görünür.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>mkdir git-deneme
+cd git-deneme
+git init -b main
+git config user.name "Ad Soyad"
+git config user.email "ad@example.com"</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>Bir dosya oluştur ve kaydet</h3>
+            <p>İlk komutu yeni deneme klasöründe çalıştır. <code>git add</code>, README’nin o anki sürümünü hazırlar. Commit’ten önce dosyayı tekrar düzenlersen yeni sürümü eklemek için <code>git add</code> komutunu yeniden çalıştır.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>printf '# Git Denemem\n' &gt; README.md
+git status --short
+git add README.md
+git diff --staged
+git commit -m "İlk commit"</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>İlk commit’ini gör</h3>
+            <p>İlk satırda kısa commit kimliğini ve <strong>İlk commit</strong> mesajını görürsün. İkinci komut çıktı vermezse çalışma klasöründe bekleyen değişiklik yoktur.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git log --oneline
+git status --short</code></pre></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="wrap section practice-section" id="dene" aria-labelledby="dene-baslik">
+      <div class="practice">
+        <div class="practice-copy">
+          <p class="eyebrow">ETKİLEŞİMLİ ALIŞTIRMA</p>
+          <h2 id="dene-baslik">Bir commit de burada oluştur.</h2>
+          <p>Örnek bir README dosyasını oluştur, hazırlık alanına ekle ve kaydet. Düğmeler Git akışını taklit eder. Tüm deneme tarayıcıda çalışır.</p>
+          <noscript><p>Alıştırmayı kullanmak için JavaScript’i etkinleştir.</p></noscript>
+          <div class="practice-actions" id="practice-actions" hidden>
+            <button type="button" class="button primary" id="run-step">Dosyayı oluştur</button>
+            <button type="button" class="button reset" id="reset-demo" disabled>Baştan başla</button>
+          </div>
+        </div>
+        <div class="practice-terminal">
+          <div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Deneme terminali</span><span></span></div>
+          <ol class="practice-progress" aria-label="Alıştırma adımları">
+            <li aria-current="step">Dosya</li><li>Hazırlık</li><li>Commit</li>
+          </ol>
+          <div class="terminal-output" role="log" aria-label="Alıştırma terminal çıktısı"><p class="terminal-note">Depo hazır. İlk adım dosyayı oluşturmak.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lesson-shell" id="dallar" aria-labelledby="dallar-baslik">
+      <div class="wrap section lesson">
+        <p class="eyebrow">İLK COMMIT’TEN SONRA</p>
+        <h2 id="dallar-baslik">Dal aç, değişikliği incele ve birleştir.</h2>
+        <p class="section-intro">İlk depoyu oluşturduğun <code>git-deneme</code> klasöründe devam et. Örnekte README dosyasına bir kullanım bölümü ekleyeceğiz.</p>
+        <ol class="steps" aria-label="Dal ve birleştirme adımları">
+          <li>
+            <div class="step-copy"><h3>README için bir dal aç</h3>
+            <p><code>git switch -c</code> bulunduğun commit’ten yeni bir dal oluşturur ve o dala geçer. <code>git branch --show-current</code> çıktısında <code>readme-notlari</code> görmelisin.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git switch -c readme-notlari
+git branch --show-current</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>Dosyayı düzenle ve farkına bak</h3>
+            <p><code>&gt;&gt;</code> var olan dosyanın sonuna ekler. İlk <code>diff</code> düzenlediğin satırları, ikinci <code>diff</code> commit için seçtiğin satırları gösterir. Eklenen satırlar <code>+</code> ile başlar.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>printf '\n## Kullanım\n' &gt;&gt; README.md
+git diff -- README.md
+git add README.md
+git diff --staged -- README.md
+git commit -m "README kullanım bölümünü ekle"</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>Değişikliği ana dala al</h3>
+            <p><code>main</code> dalına geçince README yeniden ilk kayıttaki içeriğini gösterir. Birleştirme tamamlanınca kullanım başlığı da görünür. Örnekte <code>--no-ff</code> kullanarak iki ebeveynli bir birleştirme commit’i oluşturuyoruz. İki dalın izini <code>git log --graph</code> çıktısında görebilirsin.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git switch main
+cat README.md
+git merge --no-ff -m "README dalını birleştir" readme-notlari
+cat README.md
+git log --oneline --graph --all</code></pre></div>
+          </li>
+        </ol>
+        <div class="tip"><strong>Fast-forward ne demek?</strong><p><code>main</code> dalı ayrıldığın noktadan sonra ilerlemediyse Git, varsayılan davranışla <code>main</code> işaretçisini yeni commit’e taşıyabilir. Bu durumda geçmişe ayrıca bir birleştirme commit’i eklenmez.</p></div>
+        <details class="lesson-detail">
+          <summary>Birleştirme çakışırsa ne yapacağım?</summary>
+          <p>İki dal aynı satırı farklı biçimde düzenlediğinde Git, hangi içeriğin kalacağına karar vermeni isteyebilir. Dosyada <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code> ve <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> işaretlerini bul. Kalmasını istediğin metni yaz ve işaretleri sil. Sonra dosyayı <code>git add README.md</code> ile çözülmüş olarak işaretle. <code>git status</code> başka çakışma göstermiyorsa <code>git commit</code> ile birleştirmeyi tamamla. Tamamlamadan vazgeçersen <code>git merge --abort</code> ile birleştirmeyi iptal edebilirsin.</p>
+          <p><a href="https://git-scm.com/docs/git-merge">Git birleştirme belgeleri</a></p>
+        </details>
+      </div>
+    </section>
+
+    <section class="wrap section undo-section" id="geri-al" aria-labelledby="geri-al-baslik">
+      <p class="eyebrow">DÜZELTME</p>
+      <h2 id="geri-al-baslik">Değişiklik hangi aşamada?</h2>
+      <p class="section-intro"><code>git status --short</code> çıktısında <code>??</code> yeni dosyayı, ilk sütundaki <code>M</code> hazırlığa alınan değişikliği, ikinci sütundaki <code>M</code> çalışma klasöründeki değişikliği gösterir. Aynı dosya iki sütunda birden görünebilir.</p>
+      <dl class="command-list">
+        <div><dt><code>git restore --staged README.md</code></dt><dd>Dosyayı bir sonraki commit’ten çıkarır ve çalışma klasöründeki düzenlemelerini korur.</dd></div>
+        <div><dt><code>git restore -- README.md</code></dt><dd>İzlenen dosyanın hazırlık alanındaki sürümünü çalışma klasörüne yazar. Hazırlığa alınmamış düzenlemeler silinir. Uygulamadan önce <code>git diff -- README.md</code> ile farkı gör.</dd></div>
+        <div><dt><code>git revert &lt;commit-kimliği&gt;</code></dt><dd>Verdiğin commit’in değişikliğini tersine çeviren yeni bir commit oluşturur. Paylaşılan dalda geçmişi koruyarak düzeltme yapmak için kullanabilirsin.</dd></div>
+      </dl>
+      <details class="lesson-detail">
+        <summary>Küçük bir geri alma denemesi</summary>
+        <p>Önceki dersi bitirdiysen <code>main</code> dalında geçici bir satır ekle ve ayrı bir commit oluştur. Ardından <code>HEAD</code> ile işaret edilen bu son commit’i geri al. Geçmişte iki yeni commit de görünür, README kullanım başlığını korur. Bu örnekte geri alınan commit geçici satırı ekleyen normal commit’tir.</p>
+        <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>printf '\nGeçici not\n' &gt;&gt; README.md
+git add README.md
+git commit -m "Geçici notu ekle"
+git revert --no-edit HEAD
+git log -2 --oneline
+cat README.md</code></pre></div>
+      </details>
+    </section>
+
+    <section class="lesson-shell" id="uzak-depo" aria-labelledby="uzak-depo-baslik">
+      <div class="wrap section lesson">
+        <p class="eyebrow">PAYLAŞIM</p>
+        <h2 id="uzak-depo-baslik">Deponu paylaş ve güncel tut.</h2>
+        <p class="section-intro">Uzak depo, ekibin ortak eriştiği Git deposudur. <code>origin</code>, bu bağlantı için yaygın kullanılan yerel addır.</p>
+        <ol class="steps" aria-label="Uzak depo adımları">
+          <li>
+            <div class="step-copy"><h3>Boş bir uzak depoya bağlan</h3>
+            <p>GitHub veya GitLab’da yazma yetkin olan boş bir depo oluştur. README gibi başlangıç dosyaları eklemeden açarsan yerel geçmişini doğrudan gönderebilirsin. Aşağıdaki <code>UZAK_DEPO_ADRESI</code> metnini kendi HTTPS veya SSH adresinle değiştir.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git remote add origin UZAK_DEPO_ADRESI
+git remote -v
+git push -u origin main</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>Gelen değişiklikleri önce incele</h3>
+            <p><code>fetch</code> yeni commit’leri indirir ve <code>origin/main</code> bilgisini günceller. Çalışma klasörü değişmez. Örnekteki <code>log</code> komutu, uzak dalda olup yerel <code>main</code> dalında bulunmayan commit’leri listeler.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git switch main
+git fetch origin
+git log --oneline main..origin/main</code></pre></div>
+          </li>
+          <li>
+            <div class="step-copy"><h3>Yerel dalı güncelle</h3>
+            <p><code>git pull --ff-only</code> gelen commit’leri indirir ve dal işaretçisini ileri taşıyabiliyorsa günceller. İki tarafta da farklı commit’ler varsa işlem durur. Ekipte kullandığınız birleştirme yöntemine karar vermek için önce iki dalın geçmişini incele.</p></div>
+            <div class="snippet"><div class="snippet-bar"><span>Terminal</span><button class="copy" type="button" hidden>Kopyala</button></div><pre><code>git pull --ff-only</code></pre></div>
+          </li>
+        </ol>
+        <div class="tip"><strong>Var olan bir projeye katılmak</strong><p>Projeyi bilgisayarına ilk kez alıyorsan <code>git clone DEPO_ADRESI</code> kullan. Klonlama yeni bir klasör, yerel bir depo ve <code>origin</code> bağlantısı oluşturur.</p></div>
+      </div>
+    </section>
+
+    <section class="wrap section reference-section" id="komutlar" aria-labelledby="komutlar-baslik">
+      <p class="eyebrow">HIZLI BAŞVURU</p>
+      <h2 id="komutlar-baslik">Git komutları</h2>
+      <p class="section-intro">Günlük iş akışında hangi komutu ne zaman kullanacağını gör.</p>
+      <dl class="command-list">
+        <div><dt><code>git status -sb</code></dt><dd>Bulunduğun dalı ve dosyaların durumunu kısa biçimde gösterir.</dd></div>
+        <div><dt><code>git diff</code></dt><dd>İzlenen dosyalardaki henüz hazırlık alanına alınmamış değişiklikleri gösterir.</dd></div>
+        <div><dt><code>git diff --staged</code></dt><dd>Bir sonraki commit için hazırlanan değişiklikleri gösterir.</dd></div>
+        <div><dt><code>git log --oneline</code></dt><dd>Geçerli daldan erişilebilen commit’leri kısa kimlikleri ve mesajlarıyla listeler.</dd></div>
+        <div><dt><code>git switch -c yeni-dal</code></dt><dd>Bulunduğun commit’ten yeni bir dal oluşturur ve o dala geçer.</dd></div>
+        <div><dt><code>git clone &lt;depo-url&gt;</code></dt><dd>Mevcut bir depoyu geçmişiyle birlikte bilgisayarına kopyalar.</dd></div>
+      </dl>
+      <div class="faq">
+        <h3>Sık sorulan sorular</h3>
+        <details><summary>Dal (branch) nedir?</summary><p>Dal, bir commit’i işaret eden isimdir. Yeni commit oluşturdukça o dalın işaretçisi ilerler. Ayrı bir dalda çalışarak <code>main</code> dalının geçmişini doğrudan değiştirmeden yeni bir fikri deneyebilirsin.</p></details>
+        <details><summary>Commit’lerim uzak depoda neden görünmüyor?</summary><p><code>git commit</code> yerel depoya kayıt yapar. Uzak depo bağlıysa ve yazma yetkin varsa <code>git push -u origin main</code> ile <code>main</code> dalını <code>origin</code> adlı uzak depoya gönderebilirsin. Bağlantıları <code>git remote -v</code> ile kontrol edebilirsin.</p></details>
+        <details><summary>Git’in bazı dosyaları takip etmesini nasıl önlerim?</summary><p>Örneğin <code>.env</code> dosyasını veya <code>node_modules/</code> klasörünü, Git henüz takip etmeye başlamadan önce <code>.gitignore</code> dosyasına ayrı satırlarda ekle. Git, daha önce izlemeye başladığı dosyaları bu ayar yüzünden takipten çıkarmaz.</p></details>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="#ust"><span class="brand-icon" aria-hidden="true">⌘</span> Git Rehberi</a>
+      <nav aria-label="Kaynaklar">
+        <a href="https://git-scm.com/book/tr/v2">Pro Git kitabı</a>
+        <a href="https://git-scm.com/docs/git">Git belgeleri</a>
+        <a href="#geri-al">Geri alma</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>
